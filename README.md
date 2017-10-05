@@ -7,5 +7,6 @@ CAPITA is built in SAS and to use CAPITA you will require access to the 2013-14 
 We hope that you enjoy using this model and we just ask that you read the user licence agreement as you download.
 We are also keen to collaborate to enhance the model. We would therefore greatly appreciate if you let us know that you have downloaded the model via the CAPITA@treasury.gov.au email address. This will enable us to contact you for user training sessions and user group meetings.
 
-The Australian Treasury
+In addition to the technical documentation on this repository, Treasury has also published a working paper through the Treasury Research Institute which summarises the model and provides some results. The paper can be found at https://treasury.gov.au/publication/capita-treasurys-microsimulation-model-of-personal-income-tax-and-transfers/
 
+The Australian Treasury
