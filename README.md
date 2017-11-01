@@ -5,7 +5,7 @@ CAPITA is the Commonwealth’s general purpose static microsimulation model of t
 CAPITA is built in SAS and to use CAPITA you will require access to the 2013-14 Survey of Income and Housing and the 2011 Census microdata.
 
 We hope that you enjoy using this model and we just ask that you read the user licence agreement as you download.
-We are also keen to collaborate to enhance the model. We would therefore greatly appreciate if you let us know that you have downloaded the model via the CAPITA@treasury.gov.au email address. This will enable us to contact you for user training sessions and user group meetings.
+We are also keen to collaborate to enhance the model. We would therefore greatly appreciate if you let us know that you have downloaded the model via the CAPITA@treasury.gov.au email address. This will enable us to contact you for user training sessions and user group meetings. Pull requests are also welcome.
 
 The Australian Treasury
 
