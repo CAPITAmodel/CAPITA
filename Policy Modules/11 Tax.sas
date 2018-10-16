@@ -79,7 +79,17 @@
 
     END ;
 
-    * Calculate MAWTO (before 1 July 2014) for the reference and, if applicable, the spouse ;
+	*Calculate LAMITO for the reference and, if applicable, the spouse;
+
+	%Lamito( r )
+
+    IF Coupleu = 1 THEN DO ; 
+
+        %Lamito( s ) 
+
+    END ;
+
+    * Calculate MAWTO for the reference and, if applicable, the spouse ;
 
     %Mawto( r ) 
 
@@ -89,7 +99,7 @@
 
     END ;
 
-    * Calculate DSTO (before 1 July 2014) and DICTO for the reference with the spouse as the dependant, or for the spouse with the reference as the dependant ;
+    * Calculate DSTO and DICTO for the reference with the spouse as the dependant, or for the spouse with the reference as the dependant ;
 
     IF Coupleu = 1 THEN DO ;
 
@@ -157,7 +167,7 @@
     *      5.        Calculate Temporary Budget Repair Levy                           *
     **********************************************************************************;
 
-    * Calculate the Temporary Budget Repair Levy (Applicable for 2014-15, 2015-16, and 2016-17) ;
+    * Calculate the Temporary Budget Repair Levy (Applicable for 2014, 2015, and 2016) ;
 
     %TempBudgRepLev( r )
 
@@ -166,6 +176,32 @@
         %TempBudgRepLev( s ) 
 
     END ;
+
+
+	***********************************************************************************
+    *      5.a        Calculate HELP Repayment Amount                                 *
+    **********************************************************************************;
+	* Check to see if RunCameo is Y before calculation of HELP repayments
+	is added to the run of CAPITA. Data currently does not exist on basefile
+	to run for distributional analysis ;
+
+	%IF &RunCameo = Y %THEN %DO ;
+
+		* Create 2 arrays: income thresholds, and repayment rates;
+
+	    %HelpArray
+
+	    * Apply Helparray parameters to calculate repayment amount for reference person ;
+
+	    %HelpPay( r )
+
+		IF Coupleu = 1 THEN DO ; 
+
+	        %HelpPay( s ) 
+
+	    END ;
+
+	%END ; 
 
     ***********************************************************************************
     *      6.        Calculate final tax liabilities                                  *
@@ -211,6 +247,8 @@
 
             %Lito( &i ) 
 
+			%Lamito( &i )
+
             %MedLevPsn( &i ) 
 
             %MedLevSur( &i ) 
@@ -241,7 +279,7 @@
 
     * This array holds all tax thresholds (that is all variables with a TaxThr prefix are assigned to this array) ;
 
-    ARRAY TaxThr{ * } TaxThr: ;     * Eg TaxThr1 is the first tax threshold ;     
+    ARRAY TaxThr{ * } TaxThr: ;     * Eg TaxThr1 is the first tax threshold at $18,200 for 2013/14 ;     
 
     * This array holds all tax rates (that is all variables with a TaxRate prefix are assigned to this array);
 
@@ -372,6 +410,39 @@
 
 %MEND SaptoElig ;
 
+
+**********************************************************************************
+*   Macro:   SaptoThrEnt                                                           *
+*   Purpose: Calculate the SAPTO threshold and entitlement for a person.        *
+*********************************************************************************;;
+
+%MACRO SaptoThrEnt;
+	* Part 5, Division 1, Income Tax Assessment (1936 Act) Regulation 2015 ;
+
+	*Rebate threshold (if this amount is less than LITO threshold) - reg 9(5);
+	SaptoRebThrPsn&psn = TaxThr1 + (LITOMax + SaptoMaxPsn&psn)/TaxRate1;
+
+	*Rebate threshold (if the amount above exceeds LITO threshold) - reg 9(6) and 9(7);
+	IF SaptoRebThrPsn&psn > LITOThr1 THEN DO;
+		SaptoRebThrPsn&psn = (TaxRate1 * TaxThr1 + LITOMax + SaptoMaxPsn&psn + LITOThr1*(LITOTpr1 + TaxRate2 - TaxRate1))/(LITOTpr1 + TaxRate2);
+	END;
+
+	*Round up to the nearest whole dollar - reg 9(8);
+	SaptoRebThrPsn&psn = CEIL(SaptoRebThrPsn&psn);
+
+	*Calculate cut out threshold to determine 'eligbility' - Reg 10(1);
+	SaptoCutOutPsn&psn = SaptoMaxPsn&psn/SaptoTpr + SaptoRebThrPsn&psn;
+
+	*Round up to the nearest whole dollar - reg 10(2);
+	SaptoCutOutPsn&psn = CEIL(SaptoCutOutPsn&psn);
+
+	* Calculate SAPTO entitlement - Reg 11 ;
+    IF RebIncA&psn <= SaptoRebThrPsn&psn THEN SaptoA&psn = SaptoMaxPsn&psn ;
+    ELSE IF RebIncA&psn > SaptoRebThrPsn&psn THEN SaptoA&psn = MAX( 0 , SaptoMaxPsn&psn - SaptoTpr * ( RebIncA&psn - SaptoRebThrPsn&psn ) ) ;
+%MEND;
+
+
+
 **********************************************************************************
 *   Macro:   SaptoPsn                                                            *
 *   Purpose: Calculate the income tested senior and pensioners tax offset for    *
@@ -394,44 +465,24 @@
         %END ;
 
         IF SaptoType&psn = 'ConditionalElig' THEN DO ;
-
-            * Calculate Rebate Amount, Rebate Threshold, Cut Out Threshold, and SAPTO ;
-            * (Subreg 150AB(1), 150AB(3) and 150AB(3A) of the ITR 1936) ;
+            * Calculate Rebate Amount, Rebate Threshold, Cut Out Threshold, and SAPTO entitlement;
+            * Part 5, Division 1, Income Tax Assessment (1936 Act) Regulation 2015 ;
             
             SaptoMaxPsn&psn = SaptoMax&SC ;
+			
+			*Calculate threshold and entitlement;
+			%SaptoThrEnt
 
-            SaptoRebThrPsn&psn = CEIL( SolveSaptoRebThr( CumTax1 , TaxRate1 , TaxThr1 , CumTax2 , TaxRate2 , TaxThr2 , 
-                                       LitoMax , LitoTpr , LitoThr , SaptoMaxPsn&psn ) ) ;
-
-            SaptoCutOutPsn&psn = CEIL( SaptoMaxPsn&psn / SaptoTpr + SaptoRebThrPsn&psn ) ;   
-
-            * Assign eligibility flags ;
-
+            * Assign eligibility based on cut out threshold (s160AAAA (3) and (4), ITAA1936) 
+				- used to assess eligibility for transferability;
             %IF &SC = S %THEN %DO ;
-
                 IF RebIncA&psn < SaptoCutOutPsn&psn THEN SaptoType&psn = 'SINGLE' ;
-
                 ELSE SaptoType&psn = '' ;
-
             %END ;
-
             %ELSE %IF &SC = C %THEN %DO ;
-
                 IF RebIncAU < SaptoCutOutPsn&psn THEN SaptoType&psn = 'COUPLE' ;
-
                 ELSE SaptoType&psn = '' ;
-
             %END ; 
-     
-            * Calculate SAPTO (Para 150AD(c) of the ITR 1936) ;
-
-            IF SaptoType&psn NOT IN ( '' ) THEN DO ;
-
-                IF RebIncA&psn <= SaptoRebThrPsn&psn THEN SaptoA&psn = SaptoMaxPsn&psn ;
-
-                ELSE IF RebIncA&psn > SaptoRebThrPsn&psn THEN SaptoA&psn = MAX( 0 , SaptoMaxPsn&psn - SaptoTpr * ( RebIncA&psn - SaptoRebThrPsn&psn ) ) ;
-
-            END ;
 
         END ;    * Determine eligibility and calculate SAPTO ;
 
@@ -448,6 +499,9 @@
 %MACRO SaptoCoupTran( psn , partner ) ;
 
     * From 1 July 2012, when SAPTO commenced ;
+	* UPDATED 180926
+    * Part 5, Division 1, Income Tax Assessment (1936 Act) Regulation 2015 ;
+	* Regulation 12;
 
     %IF &Year >= 2012 %THEN %DO ;
 
@@ -456,7 +510,7 @@
 
         IF SaptoType&psn = 'COUPLE' AND SaptoType&partner = 'COUPLE'    /* If both members of couple are eligible for SAPTO */
         AND SaptoA&partner > GrossIncTaxA&partner                       /* If &partner has excess SAPTO after offsetting gross income tax. &partner gives excess SAPTO */
-        AND SaptoA&psn < SaptoMaxPsn&psn                                /* If &psn SAPTO is tapered (that is they have used up all their LITO and SAPTO) */
+        AND SaptoA&psn < SaptoMaxPsn&psn                                /* If &psn SAPTO is tapered (that is they have used up all their Lito and SAPTO) */
         THEN DO ;
 
             * Assign eligibility flags. By assigning these new flags also means that the opposite scenarios will not be run ;
@@ -465,48 +519,25 @@
 
             SaptoType&partner = 'GIVEXSAPTO' ;    
 
-            * Calculate amount of unused SAPTO transferred to &psn (Subreg 150AE(11) and 150AE(12) of the ITR 1936) ;
-
-            IF TaxIncA&partner <= 6000 THEN DO ;                                 
-                
-                * Amount of unused SAPTO transferred to &psn is amount of excess SAPTO of &partner ;
-
-                TakeXSaptoA&psn = SaptoA&partner - GrossIncTaxA&partner ;                               
-
+            * Calculate amount of unused SAPTO transferred to &psn - Reg 12(3) ;
+            IF TaxIncA&partner <= 6000 THEN DO ;                
+                TakeXSaptoA&psn = SaptoA&partner - GrossIncTaxA&partner ;
             END ;
-            
-            ELSE IF TaxIncA&partner > 6000 THEN DO ;                             
-                
-                * Amount of unused SAPTO transferred to &psn is the amount of &partner excess SAPTO calculated under the 2011/12 tax rates, ;
-                * before the Clean Energy Future reform commenced ;
-
+            ELSE IF TaxIncA&partner > 6000 THEN DO ;
                 TakeXSaptoA&psn = MAX( 0 , SaptoA&partner - ( TaxIncA&partner - 6000 ) * 0.15 ) ;
-                
-            END ;
+			END ;
 
             * The amount of SAPTOA&partner after transferring unused SAPTO to &psn is equal to &partner gross income tax. ;
             * Set SaptoMaxPsn&partner to SaptoA&partner so that any unused SaptoA&psn is not transferred back to &partner when the reverse scenario is calculated. ;
 
             SaptoA&partner = GrossIncTaxA&partner ;
-
             SaptoMaxPsn&partner = SaptoA&partner ;
 
-            * Recalculate the amount of SAPTO for &psn after taking unused SAPTO ;
-            * The amount of SaptoMaxPsn&partner does not need to be means tested again because after giving their unused SAPTO ; 
-            * the &partner new Rebate Threshold would always be more than their Rebate Income ;
-            * It is unclear whether the couple SAPTO Cut Out threshold needs to be recalculated and then the couple Rebate Income tested against it ;
-            * This is not done in this code or in the ATO online calculator ;
-
+            * Transfer unused amount from partners to persons maximum SAPTO amount;
             SaptoMaxPsn&psn = SaptoMaxC + TakeXSaptoA&psn ;
 
-            SaptoRebThrPsn&psn = CEIL( SolveSaptoRebThr( CumTax1 , TaxRate1 , TaxThr1 , CumTax2 , TaxRate2 , TaxThr2 , 
-                                       LitoMax , LitoTpr , LitoThr , SaptoMaxPsn&psn ) ) ;
-
-            SaptoCutOutPsn&psn = CEIL( SaptoMaxPsn&psn / SaptoTpr + SaptoRebThrPsn&psn ) ;   
-
-            IF RebIncA&psn <= SaptoRebThrPsn&psn THEN SaptoA&psn = SaptoMaxPsn&psn ;
-
-            ELSE IF RebIncA&psn > SaptoRebThrPsn&psn THEN SaptoA&psn = MAX( 0 , SaptoMaxPsn&psn - SaptoTpr * ( RebIncA&psn - SaptoRebThrPsn&psn ) ) ;
+			*Recalculate threshold and entitlement;
+			%SaptoThrEnt  
 
         END ;
 
@@ -522,7 +553,7 @@
 
 %MACRO Bento( psn ) ; 
 
-    * Rebatable Benefit (Subsec 160AAA (1) of the ITAA 1936) is created in the Income Module ;
+     * Rebatable Benefit (Subsec 160AAA (1) of the ITAA 1936) is created in the Income Module ;
     * Rebatable Benefits included in CAPITA are: Widow Allowance, Youth Allowance, Austudy, Newstart Allowance, Sickness Allowance, Special Benefit, and Partner Allowance ;
     * Rebatable Benefits not included in CAPITA are: Mature Age Allowance (post 30 June 1996), Disaster Recovery Allowance, and Community Development Employment Project ;
 
@@ -578,21 +609,84 @@
 *            taxpayers.                                                          *
 *********************************************************************************;;
 
+
 %MACRO Lito( psn ) ;
 
+
+
+%IF ( &Duration = A AND ( &Year < 2022 ) )
+	OR ( &Duration = Q AND &Year < 2022)
+	OR ( &Duration = Q AND &Year = 2022 AND ( ( &Quarter = Mar ) OR ( &Quarter = Jun ) ) )
+	%THEN %DO ;
+
+
     * Else if taxable income is less than or equal to the Lito threshold ;
-    IF TaxIncA&psn <= LitoThr THEN LitoA&psn = LitoMax ;
+    IF TaxIncA&psn <= LitoThr1 THEN LitoA&psn = LitoMax ;
 
     * Else if taxable income is greater than the Lito threshold ;
-    ELSE IF TaxIncA&psn > LitoThr THEN LitoA&psn = MAX( 0 , LitoMax - LitoTpr * ( TaxIncA&psn - LitoThr ) ) ;
+    ELSE IF TaxIncA&psn > LitoThr1 THEN LitoA&psn = MAX( 0 , LitoMax - LitoTpr1 * ( TaxIncA&psn - LitoThr1 ) ) ;
+
+    * Eligibility flag for Lito (Subsec 159N (1) of the ITAA 1936) ;             
+    IF LitoA&psn > 0 THEN LitoFlag&psn = 1 ;
+%END;
+
+
+%ELSE %DO;
+
+
+    * Else if taxable income is less than or equal to the Lito threshold ;
+    IF TaxIncA&psn <= LitoThr1 THEN LitoA&psn = LitoMax ;
+
+    * Else if taxable income is greater tham the Lito threshold ;
+    ELSE IF TaxIncA&psn <= LitoThr2 THEN LitoA&psn = MAX( 0 , LitoMax - LitoTpr1 * ( TaxIncA&psn - LitoThr1 ) ) ;
+
+	* Else if taxable income is greater than the Lito threshold ;
+    ELSE IF TaxIncA&psn > LitoThr2 THEN LitoA&psn = MAX( 0 , LitoMax - LitoTpr2 * ( TaxIncA&psn - LitoThr2 )- LitoTpr1 * ( LitoThr2 - LitoThr1 ) ) ;
 
     * Eligibility flag for Lito (Subsec 159N (1) of the ITAA 1936) ;             
     IF LitoA&psn > 0 THEN LitoFlag&psn = 1 ;
 
+%END ; 
+
 %MEND Lito ;
 
+
 **********************************************************************************
-*   Macro:   Mawto (before 1 July 2014)                                                              *
+*   Macro:   Lamito                                                                *
+*   Purpose: Calculates the income tested low and middle income tax offset for
+*			 eligible taxpayers.
+
+*********************************************************************************;;
+
+%MACRO Lamito( psn ) ;
+
+ %IF ( &Duration = A AND ( &Year > 2017 AND &Year < 2022 ) )
+	OR ( &Duration = Q AND &Year > 2018 AND &Year < 2022 )
+	OR ( &Duration = Q AND &Year = 2018 AND ( ( &Quarter = Sep ) OR ( &Quarter = Dec ) ) )
+	OR ( &Duration = Q AND &Year = 2022 AND ( ( &Quarter = Mar ) OR ( &Quarter = Jun ) ) )
+	%THEN %DO ;
+
+    * Else if taxable income is less than or equal to the second tax threshold threshold ;
+    IF TaxIncA&psn <= LamitoThr1 THEN LamitoA&psn = LamitoBase ;
+
+    * Else if taxable income is greater than the Lamito threshold ;
+    ELSE IF TaxIncA&psn <= LamitoThr2 THEN LamitoA&psn = MIN( LamitoMax,  LamitoBase + LamitoTpr1 * ( TaxIncA&psn - LamitoThr1 ) ) ;
+
+	* Else if taxable income is greater than the third tax threshold ;
+    ELSE IF TaxIncA&psn > LamitoThr2 THEN LamitoA&psn = MAX( 0 , LamitoMax - LamitoTpr2 * ( TaxIncA&psn - LamitoThr2 ) ) ;
+
+    * Eligibility flag for Lito (Subsec 159N (1) of the ITAA 1936) ;             
+    IF LamitoA&psn > 0 THEN LamitoFlag&psn = 1;
+
+%END ;
+
+
+%MEND Lamito ;
+
+
+
+**********************************************************************************
+*   Macro:   Mawto                                                               *
 *   Purpose: Calculates the income tested mature age workers tax offset for      *
 *            eligible taxpayers.                                                 *
 *********************************************************************************;;
@@ -601,7 +695,7 @@
 
     * Determine eligibility and calculate MAWTO (Sec 61-560 and 61-565 of the ITAA 1997) ;
     * Net Income from Working (Sec 61-570 of the ITAA 1997) will be created as part of the income definition module ;   
-    * MAWTO is abolished from 1 July 2014, Tax and Superannuation Laws Amendment (2014 Measures No. 5) Act 2015 ;
+    * NOTE: MAWTO is abolished from 1 July 2014, Tax and Superannuation Laws Amendment (2014 Measures No. 5) Act 2015 ;
 
     IF ActualAge&psn >= MawtoAge
     AND NetIncWorkA&psn > 0      
@@ -622,7 +716,7 @@
 %MEND Mawto ;
 
 **********************************************************************************
-*   Macro:   Dsto (before 1 July 2014)                                                                *
+*   Macro:   Dsto                                                                *
 *   Purpose: Calculates the dependant spouse tax offset for the reference or the *
 *            spouse. Also includes dependant (invalid and carer) tax offset, to  *
 *            the extent it can be modelled. Modelling includes DSTO or DICTO     *
@@ -643,7 +737,7 @@
     THEN DO ;
 
         * Calculate DSTO ;
-        * NOTE: DSTO abolished from 1 July 2014, Budget 2014;
+        * NOTE: DSTO abolished from 1 July 2014, Budget 2014. Not yet enacted ;
 
         IF ActualAge&partner >= &Year - 1 - 1952                /* &psn is born after 1 July 1952 from 1 July 2012 (Subsec 159J(1C) of the ITAA 1936) */
         AND AdjTaxIncA&psn <= DstoIncThr                                    /* &psn Adjusted Taxable Income for Rebates is more than the income limit for FTBB (Subsec 159J(1AB) of the ITAA 1936) */
@@ -1007,7 +1101,7 @@
 *   Macro:   TempBudgRepLev                                                      *
 *   Purpose: Calculates the Temporary Budget Repair levy for the reference,      *
 *            spouse, and dependants. The levy is payable only for the 2014-15,   *
-*            2015-16, and 2016-17 Financial Years.                                *
+*            2015-16, and 2016-17 Financial Year.                                *
 *********************************************************************************;;
 
 %MACRO TempBudgRepLev( psn ) ;
@@ -1029,6 +1123,106 @@
 %MEND TempBudgRepLev ;
 
 **********************************************************************************
+*   Macro:   HelpArray                                                           *
+*   Purpose: Create 2 arrays. First array contains tier thresholds. Second array *
+*            contains tier repayment rates.                                      *
+*********************************************************************************;;
+
+%MACRO HelpArray( ) ;
+
+    * The size of these arrays are determined dynamically by the number of array elements read in 
+      and there is no limit to the number of tier parameters allowed ;
+
+    * This array holds all repayment tier thresholds (that is all variables with a txHelpThr prefix are assigned to this array) ;
+
+    ARRAY txHelpThr{ * } txHelpThr: ;     * Eg txHelpThr1 is the first repayment tier threshold at $45,000 for 2018/19 ;
+
+    * This array holds all tier repayment rates (that is all variables with a txHelpRate prefix are assigned to this array);
+
+    ARRAY txHelpRate{ * } txHelpRate: ;   * Eg txHelpRate1 is the first repayment tier rate at 1.0% for 2018/19 ;      
+
+    IF _N_ = 1 THEN DO ;
+
+        * Counts the number of txHelpRate parameters in the txHelpRate array ;
+        NumHelpRates = DIM( txHelpRate ) ;     
+        
+        * Check number of array variables assigned are consistent in case unwanted variables with the same prefixes are also read in ;
+        IF NumHelpRates NE DIM( txHelpThr ) THEN PUT "ERROR: NUMBER OF TIER THRESHOLDS NOT EQUAL TO TIER RATES" ;
+
+    END ;
+
+%MEND HelpArray ;
+
+*********************************************************************************
+*   Macro:   HelpPay                                                            *
+*   Purpose: Calculates repayment amount by applying tier repayment rates to	*
+*			 rebate income.                                                     *
+*********************************************************************************;;
+
+%MACRO HelpPay( psn ) ;
+
+NumHelpTier = DIM( txHelpRate ); 			/* Specify number of tiers */
+
+
+	*	HELP repayments are only made if individual has positive HELP debt, and are liable for positive Medicare levy
+		amount or are not eligible for a reduction in the Medicare levy ;
+
+
+
+	IF HelpDebt&psn > 0 THEN DO ; 			/* If HELP debt is positive then check Medicare levy status */
+
+		IF MedLevRedA&psn > 0				/* Eligible for Medicare levy reduction */
+		OR MedLevA&psn = 0 THEN DO ;		/* Not liable for positive Medicare levy amount */					
+
+			HelpPayA&psn = 0 ; 				/* Individual not liable for HELP repayments */
+
+		END ;								/* End not liable condition */
+
+		ELSE IF MedLevRedA&psn = 0			/* Not eligible for Medicare levy reduction */
+		OR MedLevA&psn > 0	THEN DO ;		/* Liable for positive Medicare levy amount */
+		
+			* Repayment Calculator ;
+
+			IF RebIncA&psn <= txHelpThr1 THEN DO ;	/* If repayment (rebate) income is less or equal to first tier threshold */
+
+        		HelpPayA&psn = 0 ;					/* Repayment amount is equal to zero */	
+
+    		END ;									/* End income below lowest threshold condition */
+	
+		    ELSE IF RebIncA&psn > txHelpThr1				/* If repayment (rebate) income is above first threshold */
+			AND RebIncA&psn <= MAX(OF txHelpThr { * } )		/* If repayment (rebate) income is below the highest threshold */
+			THEN DO i = 2 TO NumHelpTier ;					/* Then run through all of the tiers to find which tier they belong to */	
+				
+		        IF RebIncA&psn > txHelpThr{ i - 1 }
+				AND RebIncA&psn <= txHelpThr{ i } THEN DO ; 					/*  Assign individual to appropriate tier */
+
+		            HelpPayA&psn = txHelpRate{ i - 1 } * RebIncA&psn ;			/*  Repayment amount is equal to repayment (rebate) income multiplied by the tier rate */
+
+		        END ;								/* End repayment calculation for individuals above first threshold and below the highest threshold */
+
+	    	END ;									/* End income above first threshold and below highest threshold condition */
+
+			ELSE DO ;								/* If repayment (rebate) income is above the highest threshold */
+
+				HelpPayA&psn = MAX(OF txHelpRate { * } ) * RebIncA&psn ;							/* Repayment amount is equal to repayment (rebate) income multiplied by the highest tier rate */
+
+			END ;									/* End income above highest threshold condition */
+
+
+		END ;										/* End repayment calculator */
+
+	END ;											/* End positive HELP debt condition */
+
+	ELSE IF HelpDebt&psn = 0 THEN DO ;				/* Individual has no HELP debt */
+		
+		HelpPayA&psn = 0 ;							/* Repayment amount is equal to zero */
+
+	END ;											/* End no HELP debt condition */													
+
+
+%MEND HelpPay ;
+
+**********************************************************************************
 *   Macro:   FinalTaxLiab                                                        *
 *   Purpose: Calculates the summary tax variables, including total tax offsets,  *
 *            net income tax, tax offsets used, amounts of refundable tax offset, *
@@ -1043,6 +1237,7 @@
 
     TotTaxOffsetA&psn = BentoA&psn
                       + LitoA&psn
+					  + LamitoA&psn
                       + FrankCrImpA&psn       /* Refundable tax offset */
                       %IF &psn IN ( r , s ) %THEN %DO ;
                       + SuperToA&psn
@@ -1062,9 +1257,24 @@
 
     * Calculate amount of levies and charges ;
 
+	*As HELP payments are only calculated for recipient and spouse, we need to 
+	adjust the calculation of LevyAndChargeA accordingly;
+
+	%IF &psn = r OR &psn = s %THEN %DO ;  
+
+	    LevyAndChargeA&psn = MedLevA&psn           /* Medicare levy */
+	                       + MedLevSurA&psn        /* Medicare levy surcharge */
+	                       + TempBudgRepLevA&psn  /* Temporary Budget Repair levy */
+						   + HelpPayA&psn	;	   /* HELP debt repayment */
+	%END ; 
+
+	%ELSE %DO ; 
+
     LevyAndChargeA&psn = MedLevA&psn           /* Medicare levy */
                        + MedLevSurA&psn        /* Medicare levy surcharge */
                        + TempBudgRepLevA&psn ; /* Temporary Budget Repair levy */
+
+	%END ; 
 
     * Calculate amount payable or refundable. Positive amount is amount payable, negative amount is amount refundable ;
 
@@ -1093,6 +1303,10 @@
     UsedLitoA&psn = MIN( LitoA&psn , CumGrossIncTaxA&psn ) ;                * LITO used ;
 
     CumGrossIncTaxA&psn = MAX( 0 , CumGrossIncTaxA&psn - LitoA&psn ) ;
+
+	UsedLamitoA&psn = MIN( LamitoA&psn , CumGrossIncTaxA&psn ) ;                * LAMITO used ;
+
+    CumGrossIncTaxA&psn = MAX( 0 , CumGrossIncTaxA&psn - LamitoA&psn ) ;
 
     %IF &psn IN ( r , s ) %THEN %DO ;                                       * MAWTO, Super tax offset, DSTO and DICTO used by reference and spouse ;
                                                                             * They are aggregated under Item 20, Subsec 63-10(1) of the ITAA 1997 so ordering does not matter ;
@@ -1128,7 +1342,7 @@
 
         %END ;
 
-        BentoA&psn LitoA&psn FrankCrImpA&psn                        
+        BentoA&psn LitoA&psn LamitoA&psn FrankCrImpA&psn                        
 
         /* Levies and charges */
         MedLevA&psn MedLevSurA&psn TempBudgRepLevA&psn                
@@ -1144,7 +1358,7 @@
 
         %END ;
 
-        UsedBentoA&psn UsedLitoA&psn UsedFrankCrA&psn ;        
+        UsedBentoA&psn UsedLitoA&psn UsedLamitoA&psn UsedFrankCrA&psn ;        
 
     * Declare array that will hold key variables in fortnightly rates ;
 
@@ -1157,7 +1371,7 @@
 
         %END ;
 
-        BentoF&psn LitoF&psn FrankCrImpF&psn                     
+        BentoF&psn LitoF&psn LamitoF&psn FrankCrImpF&psn                     
 
         /* Levies and charges */
         MedLevF&psn MedLevSurF&psn TempBudgRepLevF&psn                
@@ -1173,7 +1387,7 @@
 
         %END ;
 
-        UsedBentoF&psn UsedLitoF&psn UsedFrankCrF&psn ;        
+        UsedBentoF&psn UsedLitoF&psn UsedLamitoF&psn UsedFrankCrF&psn ;        
 
     * Convert annual rates into fortnightly rates ;
 

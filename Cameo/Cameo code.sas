@@ -25,10 +25,10 @@ options nomprint ;
 ************************************************************************************;
 
 * Include the DefineCapitaDirectory code to set the main CAPITA drive ;
-%INCLUDE "\\sas\models$\TAD\Models\CAPITA\2. Master Version\CURRENT VERSION 2.3 (PUBLIC RELEASE)\DefineCapitaDirectory.sas" ;
+%INCLUDE "\\CAPITAlocation\DefineCapitaDirectory.sas" ;
 
 *Specify location of cameo code and spreadsheet used for creating cameo basefile;
-%LET CameoFolder = \\sas\models$\TAD\Models\CAPITA\2. Master Version\CURRENT VERSION 2.3 (PUBLIC RELEASE)\Cameo\ ;
+%LET CameoFolder = \\CAPITAlocation\Cameo\ ;
 %LET CameoInput = &CameoFolder.Cameo input.xlsx ;
 %LET CameoInitialise = &CameoFolder.CameoInitialisation.sas ;
 
@@ -49,11 +49,11 @@ options nomprint ;
 
 * Specify how to model the removal of the energy supplement;  
 * Y = Choose to give everyone the ES; 
-* N = Choose to give noone the ES; 
-%LET CameoRunEs = Y ; 
+* N = Choose to give no-one the ES; 
+%LET CameoRunEs = N ; 
 
 *Use for switch: N if running baseworld, Y if running comparison (has no effect if RunEMTR is set to Y) ;
-%LET RunCompare = Y ;
+%LET RunCompare = N ;
 
 * Use for switch: N if running cameos, Y if running effective marginal tax rate scenario (note that you can't run both in the same run). 
 * If Y, make sure that all selected input rows in the CameoInput spreadsheet have values for the SpsIncSplit, SpsInc, Start, Stop and Increment columns ;
@@ -72,10 +72,19 @@ options nomprint ;
 					;
 *Specify numeric variables required for the cameo output results ;  ;
 %LET CameoList = 
-                 FamilyID 
-                 IncPrivAu 
-                 IncPrivAr 
-                 IncPrivAs 
+/*                 FamilyID */
+/*                 IncPrivAu */
+/*                 IncPrivAr */
+/*                 IncPrivAs */
+/*				 SaptoAr*/
+/*					SaptoCutOutPsnr*/
+/*					SaptoMaxPsnr*/
+/*					SaptoRebThrPsnr*/
+/*					UsedSaptoAr*/
+/*					Pentyper*/
+/*					IncPrivLessWBFr*/
+/*					WorkBonF*/
+/*					IncOrdFr*/
 /*                 IncDispAu */
 /*                 IncDispAr*/
 /*                 IncDispAs*/
@@ -86,9 +95,11 @@ options nomprint ;
 /*                 IncTranAr*/
 /*                 IncTaxTranFr*/
 /*                 IncNonTaxTranFr*/
-
-				   AllTotAu
-				   PppTotAu
+/**/
+/*				   AllTotAu*/
+/*				   PppTotAu*/
+/*				   AssTotr*/
+/*				   Occupancyu*/
 /*				   NsaTotAu*/
 /*				   YaOtherTotAu*/
 /*				   YaStudTotAu*/
@@ -97,8 +108,8 @@ options nomprint ;
 /*				   CarerTotAu*/
 /*				   DspU21TotAu*/
 /*				   PpsTotAu*/
-                   FtbaFinalA 
-                   FtbbFinalA 
+/*                   FtbaFinalA */
+/*                   FtbbFinalA */
 
 
 /*                 CareAllFr*/
@@ -167,9 +178,9 @@ options nomprint ;
 /*                CcbMaxHrW*/
 /*                CcbInfElig*/
 /*                CcrElig*/
-                CcbAmtAu
-                CcbCostAu
-                CcrAmtAu
+/*                CcbAmtAu*/
+/*                CcbCostAu*/
+/*                CcrAmtAu*/
 /*                CcrOutPocketAu*/
 /*                CcWPerYr1*/
 /*                CcWPerYr2*/
@@ -180,19 +191,19 @@ options nomprint ;
 
 /*              Proposed childcare policy */
 
-                  CcTestInc
-                  CcsRateA
-                  CcsAmtAu
+/*                  CcTestInc*/
+/*                  CcsRateA*/
+/*                  CcsAmtAu*/
 /*                  CcsAmtA1*/
 /*                  CcsAmtA2*/
 /*                CcsAmtA3*/
 /*                CcsAmtA4*/
-                  CcsCostAu
+/*                  CcsCostAu*/
 /*                  CcsCostA1*/
 /*                  CcsCostA2*/
 /*                CcsCostA3*/
 /*                CcsCostA4*/
-                  CcsOutPocketAu
+/*                  CcsOutPocketAu*/
 /*                  CcsOutPocketA1*/
 /*                  CcsOutPocketA2*/
 /*                CcsOutPocketA3*/
@@ -208,13 +219,10 @@ options nomprint ;
 %LET CameoSimList = ;
 %LET CameoChangeList = ;
 
-*Age Pension Age is 65.5 in 2017-18, 2018-19 and increases to 66 in 2019-20, 2020-21; 
-*Note: if running Age Pensioner cameo in 2019-20 and 2020-21 then change AgePenAge to 66; 
-%LET AgePenAge = 65.5 ;
-
 %LET RateTypeBaseList = ;
 %LET RateTypeSimList = ;
 
+%LET AgePenAge = 65 ;
 %GLOBAL NumFams ;
 
 %MACRO ValidateQuarter/MINOPERATOR;
@@ -524,7 +532,7 @@ DATA CAPITA_Inputfile ;
         %DO i = 0 %TO 14 ;
 
             IF &Age = %EVAL( &i ) THEN DO ;
-                Kids&i.u = Kids&i.u + 1 ;
+                Kids&i.Su = Kids&i.Su + 1 ;
                 TotalKidsu = TotalKidsu + 1 ;
             END ;
 
@@ -573,7 +581,7 @@ DATA CAPITA_Inputfile ;
     ******************************Income data*****************************************;
                                     
     *Assume all income is derived from wages and salaries and children have no income. 
-     Assume noone is eligible for DVA payments and no uprated payments;
+     Assume no one eligible for DVA payments and no uprated payments;
 
     ************************************************************************************
     * Macro:   IncomeAssign                                                            *
@@ -713,6 +721,24 @@ RUN ;
 
 %MEND RunPolicy ;
 %RunPolicy 
+/*%global basefile ;*/
+/*        %LET Work = %SYSFUNC( GETOPTION( Work ) ) ;*/
+/*        LIBNAME Basefile "&Work" ;*/
+/*        %LET Basefile = Capita_InputFile ;*/
+/**/
+/*        DATA MO_Outfile ;*/
+/**/
+/*            IF _n_ = 1 THEN SET Param ;*/
+/**/
+/*            SET Basefile.&Basefile ;*/
+/**/
+/*            BY FamId ;    */
+/**/
+/*            OPTIONS SOURCE2 ;*/
+/**/
+/*            %INCLUDE "P:\CAPITA\2. Master Version\DEVELOPMENT VERSION\macrofree[MO].sas" ;*/
+/**/
+/*        RUN ;*/
 
 ************************************************************************************
 *      4.         Export Cameo output to Excel spreadsheet                         *               
@@ -918,13 +944,13 @@ RUN ;
 	                %LET EmtrVar3 = %SCAN( &EmtrVarList , &j + 2 , - ) ;   /* Gain or loss or No Change */
 	                %LET EmtrVar4 = %SCAN( &EmtrVarList , &j + 3 , - ) ;   /* Label */
 
-	                /* If indicator is Pos, then divide current value by next value, eg tax, which increase with income */
+	                /* If indicator is Pos, then subtract next value by current value, eg tax, which increase with income */
 	                %IF &EmtrVar3 = Pos %THEN %DO ;
 	                    IF _&EmtrVar2 - &EmtrVar2 = 0 THEN EMTR_&EmtrVar1 = 0 ;
 	                    ELSE EMTR_&EmtrVar1 = ( _&EmtrVar1 - &EmtrVar1 ) / ( _&EmtrVar2 - &EmtrVar2 ) ;
 	                %END ;
 
-	                /* If indicator is Neg, then divide current value by next value, eg transfer payment which decrease with income */
+	                /* If indicator is Neg, then subtract current value by next value, eg transfer payment which decrease with income */
 	                %ELSE %IF &EmtrVar3 = Neg %THEN %DO ;
 	                    IF _&EmtrVar2 - &EmtrVar2 = 0 THEN EMTR_&EmtrVar1 = 0 ;
 	                    ELSE EMTR_&EmtrVar1 = ( &EmtrVar1 - _&EmtrVar1 ) / ( _&EmtrVar2 - &EmtrVar2 ) ;

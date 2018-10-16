@@ -170,7 +170,7 @@
                          /* Family Payment */
                        + FtbaF&psn                  /* Family Tax Benefit Part A */
                        + FtbbF&psn                  /* Family Tax Benefit Part B */
-                       + SKBonusF&psn               /* Schoolkids Bonus */
+                       + SKBonusF&psn               /* School Kid Bonus */
                        + BabyBonusF&psn             /* Baby Bonus */
            
                          /* Supplements */

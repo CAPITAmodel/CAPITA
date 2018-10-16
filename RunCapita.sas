@@ -13,20 +13,19 @@ OPTIONS NOFMTERR ;
 **********************************************************************************;
 
 * Include the DefineCapitaDirectory code to set the main CAPITA drive ;
-%INCLUDE "\\CAPITAlocation\DefineCapitaDirectory.sas" ;
+%INCLUDE "\\CAPITAlocation\Public\DefineCapitaDirectory.sas" ;
 
-* Specify how to model the removal of the Energy Supplement (ES); 
-* G = Choose to model the grandfathering of ES - option not available in public release version; 
+* Specify how to model the removal of the energy supplement; 
 * Y = Choose to give everyone the ES; 
-* N = Choose to give noone the ES; 
+* N = Choose to give no-one the ES; 
 %LET RunEs = Y; 
 
 * Specify year and quarter of interest ;
-%LET Year = 2017 ;     * Format 20XX = 20XX-YY ;  
+%LET Year = 2015 ;     * Format 20XX = 20XX-YY ;  
 %LET Quarter = Sep ;   * Valid quarters are Mar Jun Sep Dec ;
 
 * Specify the time duration of analysis ;
-* A for Annual, the financial year. This option uses annualised parameters calculated using the time weighted average of each quarter ;
+* A for Annual, the financial year. This options uses annualised parameters calculated using time weighted average of each quarter ;
 * Q for Quarter. This option uses actual parameter values from the appropriate quarter ;
 %LET Duration = A ;
 
@@ -58,7 +57,7 @@ OPTIONS NOFMTERR ;
 *                                                                                 *
 **********************************************************************************;
 
-* Set Basefile directory. Sets the correct basefile used e.g. CAPITA basefile or Cameo basefile ;
+* Set Basefile directory. Sets the correct basefile used eg CAPITA basefile or Cameo basefile ;
 %GLOBAL Basefile ;
 %MACRO BasefileDir ;
     /* Specify Basefile for Cameo run */
@@ -108,6 +107,7 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 * Specify common directory for policy modules ;
 %LET PolicyDrive = &CapitaDirectory.Policy Modules\ ;
 
+
 * Specify name of policy modules ;
 %LET Initialisation   = &PolicyDrive.1 Initialisation.sas ;           * Module 1 - Initialisation ;
 %LET Income1          = &PolicyDrive.2 Income1.sas ;                  * Module 2 - Income 1 ;
@@ -151,12 +151,12 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 
         /* Read in quarterly parameters */
         %IF %UPCASE( &Duration ) = Q %THEN %DO ;
-            MERGE AllParmQ.AllParams_Q /*AllParmQ.ProbGrndfthr_Q*/; 
+            MERGE AllParmQ.AllParams_Q ; 
         %END ;
 
         /* Read in annualised parameters */
         %ELSE %IF %UPCASE( &Duration ) = A %THEN %DO ;
-            MERGE AllParmA.AllParams_A /*AllParmA.ProbGrndfthr_A*/; 
+            MERGE AllParmA.AllParams_A ; 
         %END ;
 
         /* Read in parameters from the chosen period */
@@ -192,6 +192,8 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 
 * Include SAPTO function - additional code for module 11; 
 
+/*
+
 %MACRO DefineSaptoFunction ;
 
 %IF %SYMEXIST(SaptoFuncDefined) %THEN %DO ;
@@ -206,6 +208,8 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 %MEND DefineSaptoFunction ;
 
 %DefineSaptoFunction ; 
+
+*/
 
 * Run policy modules in a data step ;
 

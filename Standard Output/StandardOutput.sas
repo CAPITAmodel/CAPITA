@@ -1,6 +1,7 @@
 ***********************************************************************************
 * Name of program: Standard Output.sas                                            *
 * Date:        18 December 2014                                                   *
+* Status:      Completed first draft                                              *
 * Description: Produces standard output of distirbutional and impact analysis for *
 *               export either to html or to an Excel spreadsheet. RunCapitaCompare*
 *               must be run before producing Standard Output.                     *
@@ -705,7 +706,7 @@ RUN ;
         %END ;
     %END ;
 
-    * Combine all the data into a single data set and remove the unnecessary variables ;
+    * Combine all the data into a single data set and remove the unnecasary variables ;
     DATA Summary ;                                  
         SET &datasets ;
         DROP _type_ _freq_ ;
@@ -932,7 +933,7 @@ RUN ;
 
 %MACRO Equivalise ;
 
-    * Generates equivalised incomes and places them on the income unit level data set ;
+    * Generates equivalised incomes and place on the income unit level data set ;
 
     %DO k = 1 %TO 2 ;
         %IF &k = 1 %THEN %LET world = base ;
@@ -1200,6 +1201,62 @@ RUN ;
     %END ;
 
 %MEND Quintiles ;
+
+/*%MACRO Quintiles(unit) ;*/
+/**/
+/*    * Breaks data down into quintiles based on equivalised income and outputs analysis ;*/
+/**/
+/*    %DO k = 1 %TO 2 ;*/
+/*        %IF &k = 1 %THEN %LET world = base ;*/
+/*        %ELSE %IF &k = 2 %THEN %LET world = sim ;*/
+/**/
+/*        * Determine quintiles and assign individual units to a quintile based on their */
+/*        equivalised income in the base world using the univariate procedure ;*/
+/**/
+/*        PROC UNIVARIATE     */
+/*            DATA = Capita_outfile_&world.EQ NOPRINT ;*/
+/*            VAR Inc&Unit.EquivAu_&world ;*/
+/*            WEIGHT weight_&world ;*/
+/*            OUTPUT out=&Unit.INCQUINTILES&world pctlpts=0 20 40 60 80 100 */
+/*                pctlpre=pct ;*/
+/*        RUN ;*/
+/**/
+/*        * Label quintile points according to macro variables ;*/
+/*        DATA _Null_ ;*/
+/*            SET &Unit.INCQUINTILES&world ;*/
+/*            CALL SYMPUT('q1', pct20) ;*/
+/*            CALL SYMPUT('q2', pct40) ;*/
+/*            CALL SYMPUT('q3', pct60) ;*/
+/*            CALL SYMPUT('q4', pct80) ;*/
+/*        RUN;*/
+/**/
+/*        * Assign to quintiles based on income level ;*/
+/*        DATA Capita_outfile_&world.EQ ;*/
+/*            SET Capita_outfile_&world.EQ ;*/
+/*            IF Inc&Unit.EquivAu_&world < &q1 THEN Eq&Unit.IncAuQuint_&world = 'Lowest ' ;*/
+/*            ELSE IF Inc&Unit.EquivAu_&world < &q2 THEN Eq&Unit.IncAuQuint_&world = 'Second' ;*/
+/*            ELSE IF Inc&Unit.EquivAu_&world < &q3 THEN Eq&Unit.IncAuQuint_&world = 'Third' ;*/
+/*            ELSE IF Inc&Unit.EquivAu_&world < &q4 THEN Eq&Unit.IncAuQuint_&world = 'Fourth' ;*/
+/*            ELSE                                       Eq&Unit.IncAuQuint_&world = 'Highest' ;*/
+/*        RUN ;*/
+/**/
+/*        * Output data on income unit by their income quintile ;*/
+/**/
+/*        PROC TABULATE DATA = Capita_outfile_&world.EQ OUT=&Unit.IncQuint&world ;*/
+/*            CLASS Eq&Unit.IncAuQuint_&world ;*/
+/*            VAR IncTranAu_&world PayOrRefAmntAu_&world Inc&Unit.Au_&world ;*/
+/*            WEIGHT weight_&world ;*/
+/*            TABLES Eq&Unit.IncAuQuint_&world='Quintile' ALL , */
+/*                    ( IncTranAu_&world PayOrRefAmntAu_&world Inc&Unit.Au_&world ) * */
+/*                    MEAN ; */
+/*        RUN ;*/
+/*        */
+/*        %OutputExcel( &Unit.IncQuint&world , &Unit.Inc_Quintiles_&world ) */
+/*        %OutputExcel( &Unit.INCQUINTILESBase , &Unit.QuinThreshBase )*/
+/*    */
+/*    %END ;*/
+/**/
+/*%MEND Quintiles ;*/
 
 ********************************************************************************
 10. Winners and Losers Analysis (for comparing runs on same basefile only)

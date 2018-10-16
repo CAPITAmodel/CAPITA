@@ -7,7 +7,7 @@
 
 ***********************************************************************************
 *   Macro:   RunSupplements                                                       *
-*   Purpose: Coordinate calculation                                     		  *
+*   Purpose: Coordinate allowance calculation                                     *
 **********************************************************************************;;
 
 %MACRO RunSupplements ;
@@ -41,7 +41,7 @@
     END ; 
 
     ***********************************************************************************
-    *      3.        Income Support Bonus (before 31 December 2016)                   *
+    *      3.        Income Support Bonus                                             *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Income Support Bonus ;
@@ -67,7 +67,7 @@
     END ; 
 
     ***********************************************************************************
-    *      5.        Seniors Supplement (before 30 June 2015)                         *
+    *      5.        Seniors Supplement                                               *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Seniors Supplement ;
@@ -138,7 +138,7 @@
     END ; 
 
     ***********************************************************************************
-    *      9.        Single Income Family Supplement (before 1 July 2017)             *
+    *      9.        Single Income Family Supplement                                  *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Single Income Family Supplement ;
@@ -187,8 +187,20 @@
         CareAllF&psn = NumCareDeps&psn * CareAllMaxF ;
         CareAllA&psn = CareAllF&psn * 26 ; 
         IF CareAllF&psn > 0 THEN CareAllFlag&psn = 1 ;
-    END ;
+ 	END ;	   	
+	* Apply family income test;
 
+	%IF ( &Duration = A AND ( &Year >= 2018 ) )
+	OR ( &Duration = Q AND &Year > 2018)
+	OR ( &Duration = Q AND &Year = 2018 AND ( ( &Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec )  ) )
+	%THEN %DO ;
+
+	If ( AdjTaxIncAr + AdjTaxIncAs ) > CareAllIncThrA then do;
+        CareAllF&psn = 0 ;
+        CareAllA&psn = 0 ; 
+        CareAllFlag&psn = 0 ;
+	END;
+	%END;
 %MEND CarerAllowance ;
 
 **********************************************************************************
@@ -327,7 +339,7 @@
 
 %MACRO SeniorSupplement( psn ) ;
 
-    * Legislation abolishing Senior Supplement was passed on 22 June 2015. 
+    *24 Jun 2015. Legislation abolishing Senior Supplement was passed on 22 June 2015. 
       Zeroed off in CPS from 1 July 2015;
 
         * Eligibility for Senior Supplement depends on eligibility for Commonwealth Seniors Health Card (CSHC) ;
@@ -493,7 +505,7 @@
         * Determine rate of Pensioner Education Supplement the individual is eligible for and assign that rate ;
 			* In CAPITA, the PES is assigned in full to those studying full-time on the SIH (>=75% study load) and 
 			assigned in half to those studying part-time on the SIH(<75% study load). 
-			* This is slightly different to the current policy (as at 2017-18 Budget) whereby the rate of PES is aligned with study loads, as 
+			* This is slightly different to the current policy whereby the rate of PES is aligned with study loads, as 
 			per the 2017-18 Budget. That is, 0-25% study load = 0% PES,25% study load = 25% PES, 26-50% study load = 50% PES,
 			51-75% study load = 75% PES, 76-100% study load = 100% PES. 
 			* Data limitations are the primary reason for this simplified approach, which will continue to be revisited in 
@@ -522,7 +534,7 @@
 
 			%ELSE %DO; 
 
-				*2017-18 Budget - PES is only paid during study periods after 1 Jan 2018 (assume start 1 July 2018), consistent with DSS this is approximated to be 21 out of 26 fortnights; 
+				*PES is only paid during study periods after 1 Jan 2018 (assume start 1 July 2018), consistent with DSS this is approximated to be 21 out of 26 fortnights; 
 	            PenEdSupA&psn = PenEdSupF&psn * 21 ;
 
 			%END; 
@@ -737,7 +749,7 @@
 *********************************************************************************;;
 %MACRO SinIncFamSup( psn , partner ) ;
 
-*2016-17 Budget - SIFS closed on 1 July 2017 - CAPITA does not model the grandfathering of the removal; 
+*SIFS closed on 1 July 2017 - CAPITA does not model the grandfathering of the removal; 
  %IF ( &Duration = A AND &Year < 2017 ) 
 	 OR ( &Duration = Q AND &Year < 2017 ) 
 	 OR ( &Duration = Q AND &Year = 2017 AND ( &Quarter = Mar or  &Quarter = Jun ) )
@@ -763,7 +775,8 @@
       * If taxable income is between The SIFS lower threshold and the SIFS middle 
         threshold which is the point where the reduction taper starts to kick in, 
         the payment increases by 2.5c for every dollar of income above the SIFS  
-        lower threshold until the SIFS payment rate reaches its maximum;
+        lower threshold until the SIFS payment rate reaches its maximum 
+      ;
         IF SifsThrLwr <= TaxIncA&psn <= SifsThrMid 
 
             THEN SifsA = MIN( SifsMaxA , ( TaxIncA&psn - SifsThrLwr ) * SifsTpr1 ) ;

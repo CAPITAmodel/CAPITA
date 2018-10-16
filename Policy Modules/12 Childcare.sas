@@ -1,7 +1,7 @@
 
 ************************************************************************************;
 * Name of program:  12 Childcare.sas                                               *
-* Description:      Calculates family entitlement to CCB and CCR and then CCS      *
+* Description:      Calculates families entitlement to CCB and CCR and then CCS    *
 					from 2018-19 onwards.     									   *
                     This cameo calculator only allows one type of child care per   *
 					child.                  									   *  
@@ -38,7 +38,7 @@
 	    %CcbSchooling       /*Define schooling status and calculate Schooling %*/
 	    %CcbLdcPct          /*Calculate LDC Part-time %*/
 	    %CcbBenefit         /*Calculate CCB entitlement, actual childcare cost and out of pocket cost after CCB*/
-	    %CcrRebate          /*Calculate CCR entitlement and out of pocket cost after CCR*/
+	    %CcrRebate          /*Calculate CCR entitlement and out pocket cost after CCR*/
 
 	%END ;
 
@@ -369,7 +369,7 @@
 
     CcrAmtAu = SUM ( CcrAmtA1 , CcrAmtA2 , CcrAmtA3 , CcrAmtA4 ) ;
 
-    /*out of pocket cost after CCR*/
+    /*Out of pocket cost after CCR*/
  
     IF CcHrW1 > 0 OR CcHrW2 > 0 OR CcHrW3 > 0 OR CcHrW4 > 0 THEN DO ;
 

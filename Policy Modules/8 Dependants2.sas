@@ -78,7 +78,7 @@
                 use PrivIncome + YA income from the SIH - gets similar results*/
                 AdjTaxIncAr_ = IncPrivAr + ( YouthAllSWr * 52 ) ;
 
-                %MLDepTest( r_ ) ;  * comes back with DepMLFlagr_ = 1 or 2 if medicare levy dependant ;
+                %MLDepTest( r_ ) ;  * comes back with DepMLFlagr_ = 1 or 2 if medicare levy dependant  ;
                 IF DepsMLFlagr_ = 1 THEN DepsMLOwnIU1 = DepsMLOwnIU1 + 1 ;
                 IF DepsMLFlagr_ = 2 THEN DepsMLOwnIU2 = DepsMLOwnIU2 + 1 ;
 

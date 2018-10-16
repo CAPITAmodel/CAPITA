@@ -68,9 +68,7 @@
                        ;    
 
     *Define variables for couple that need to be initialised to zero ;      
-    %LET VarListCouple =    AssDeemed -
-							AssTot -
-							CarerAllSW -
+    %LET VarListCouple =    CarerAllSW -
                             CarerPaySW -
                             DedChildMaint -
                             DeductionWrkA -
@@ -189,7 +187,7 @@
                         WrkForceExp ;  
 
 *Define other variables for all family members that need to be initialised to 
- a non-zero number ;  
+ non-zero number ;  
 %LET VarPrivHlthIns =  PrivHlthIns ;
 
 * Define character variables that need to be initialised for all family members ;
@@ -233,7 +231,8 @@
 %MEND InitNumZero ;
 ************************************************************************************
 * Macro:   InitNumOther                                                            *
-* Purpose: Initialise numeric variables to 1                                       *
+* Purpose: Initialise numeric variables to 1 (this assumes everyone receives       *
+*          universal pension)                                                      *
 * Inputs:  VarList  - name of the variable list containing the numeric variables   *
 *          SuffixList  - name of the variable list containing the suffixes         *
 ************************************************************************************;
@@ -304,7 +303,7 @@
 
     %DO i = 0 %TO 14 ;
 
-        Kids&i.u = 0 ;
+        Kids&i.Su = 0 ;
 
     %END ;
 
@@ -338,14 +337,16 @@
 %InitKids()
 
 %InitNumZero (&VarListAll , &SuffixListAll ) 
-
+/**/
 %InitNumZero (&VarListCouple , &SuffixListCouple ) 
 
 %InitNumZero (&VarListKids , &SuffixListKids ) 
-
+/**/
+/*/*Assume everyone receives universal pensions / allowances on the Sih to remove */
+/*receipt on Sih condition */
 /*%InitNumOther (&VarUnivAll , &SuffixListAll, 1 ) */
 %InitNumOther (&VarUnivCouple , &SuffixListCouple, 1 ) 
-
+/**/
 %InitCharVar (&CharListAll , &SuffixListAll )
 
 /* Previous year income data derived from other sources not required if assuming all 
@@ -363,7 +364,5 @@ SihQh = 1 ;
 /*Used in DVA module but not modelled in Cameo*/
 SharerFlagu = 0 ;
 
-/*Used for asset testing, not modelled in Cameo*/
-Occupancyu = 0 ;
 
 

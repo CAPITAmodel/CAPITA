@@ -416,6 +416,7 @@
                    + CarerPenSupBasicA&psn )              /* Carer Pension Supplement Basic Amount */
                    * ( CarerPenTaxFlag&psn = 0 )          /* Include in ATI if pension was non-taxable */
 
+
                    + DvaDisPenNmA&psn                       /* DVA Disability Pension on the SIH. The SIH amount is an
                                                                estimate of the basic amount, since the components are not
                                                                separable on the SIH. */ 

@@ -174,7 +174,6 @@
     ELSE IF (CarerPaySW&psn > 0          /* Receiving Carer Payment on the SIH */   
 
 		/* 2017-18 Budget - Working Age Payment Reforms - transition Wife Pensioners receiving Carer Allowance onto Carer Payment on 20 March 2020 */ 
-		/* Not yet legislated */
 		%IF (&Duration = A AND &Year >= 2020) 
 		    OR (&Duration = Q AND &Year > 2020) 	
 		    OR (&Duration = Q AND &Year = 2020 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
@@ -214,7 +213,6 @@
 
 		* Determine if person is eligible for Wife Pension; 
 		/* 2017-18 Budget - Working Age Payment Reforms - Wife Pension will cease on Mar 2020 */
-		/* Not yet legislated */
 
 	%IF (&Duration = A AND &Year < 2020) 
 	    OR (&Duration = Q AND &Year < 2020) 	
@@ -305,9 +303,6 @@
     RAssMinRentFu     = RAssMinRent&sc.F ;
     RAssMaxFu         = RAssMax&sc.F ;
 
-	*Cease Energy Supplement for new claimants from 20 September 2017*; 
-	*Social Services Legislation Amendment (Ending Carbon Tax Compensation) Bill 2017 - not yet legislated*; 
-
 	/*Assign Energy Supplement based on grandfathering test*/
 
 	%IF (&Duration = A AND &Year  >= 2017 
@@ -315,25 +310,8 @@
 	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
 	%THEN %DO ;
 
-		%IF &RunEs = G %THEN %DO; 
 
-			IF PenTyper IN ('DSPU21') THEN DO ;
-				IF RandDspEsGfthr < DspEsGfthrProb THEN PenEsMaxFr = DSPU21PenEsMax&sc.F ;
-				ELSE PenEsMaxFr = 0; 
-			END; 
-
-			%IF &SC = C %THEN %DO; 
-
-				IF PenTypes IN ('DSPU21') THEN DO ;
-					IF RandDspEsGfths < DspEsGfthrProb THEN PenEsMaxFs = DSPU21PenEsMax&sc.F ;
-					ELSE PenEsMaxFs = 0; 
-				END; 
-
-			%END; 
-
-		%END; 
-
-	 	%ELSE %IF &RunEs = Y %THEN %DO; 
+	 	%IF &RunEs = Y %THEN %DO; 
 
 			PenEsMaxFr = DSPU21PenEsMax&sc.F;
 
@@ -385,14 +363,11 @@
 
     PenBasicMaxF    = PPSPenBasicMaxF ;
     PenSupBasicMaxF = PPSSupBasicMaxF ;
-    PharmAllMaxF    = PharmAllMaxSF ;               		   /* Hardcoded to take single person values */
+    PharmAllMaxF    = PharmAllMaxSF ;                          /* Hardcoded to take single person values */
     PenThrF         = PPSPenThrF + DepsSSTotal * PPSThrChild ; /*  Note threshold in parameter  */
                                                                /*  spreadsheet does not include */
                                                                /*  addition for first child     */
     PenTpr          = PPSPenTpr ;
-
-	*Cease Energy Supplement for new claimants from 20 September 2017*; 
-	*Social Services Legislation Amendment (Ending Carbon Tax Compensation) Bill 2017 - not yet legislated*; 
 
 	/*Assign Energy Supplement based on grandfathering test*/
 	%IF (&Duration = A AND &Year  >= 2017 
@@ -400,16 +375,7 @@
 	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
 	%THEN %DO ;
 
-		%IF &RunEs = G %THEN %DO; 
-
-			IF PenTyper IN ('PPS') THEN DO ;
-				IF RandPpsEsGfthr < PpsEsGfthrProb THEN PenEsMaxFr = PPSPenEsMaxF ;
-				ELSE PenEsMaxFr = 0; 
-			END; 
-
-		%END; 
-
-	 	%ELSE %IF &RunEs = Y %THEN %DO; 
+		%IF &RunEs = Y %THEN %DO; 
 
 			PenEsMaxFr = PPSPenEsMaxF ; 
 

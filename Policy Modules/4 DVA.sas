@@ -138,8 +138,8 @@ OPTIONS MINOPERATOR ;
 *********************************************************************************;;
 %MACRO DvaParameters ;
 
-   * If either of the members of a couple get DVA Service Pension then both members
-       will get the parameters ;
+    * If either of the members of a couple get DVA Service Pension then both members
+      will get the parameters ;
      
        IF DvaTyper IN ('SERVICE', 'DVASERVDIS') OR
           DvaTypes IN ('SERVICE', 'DVASERVDIS') THEN DO ;
@@ -174,70 +174,12 @@ OPTIONS MINOPERATOR ;
     PenThrF          = PenThr&sc.F ;
     PenTpr           = HarmerPenTpr ;
 
-*Cease Energy Supplement for new claimants from 20 September 2017*; 
-*Social Services Legislation Amendment (Ending Carbon Tax Compensation) Bill 2017 - not yet legislated*; 
+*8Mar2017 part of Budget Savings Omnibus Bill 2016 but not yet legislated ;
 	%IF (&Duration = A AND &Year  >= 2017 
 	    OR &Duration = Q AND &Year > 2017 	
 	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
 	%THEN %DO ;
-
-	/*Assign Energy Supplement based on grandfathering test*/
-		%IF &RunEs = G %THEN %DO; 
-
-			IF	PenTyper IN ('AGE') OR DvaTyper IN ('SERVICE') THEN DO ;
-				IF RandAgeEsGfthr < AgeEsGfthrProb THEN PenEsMaxFr = PenEsMax&sc.F ;
-				ELSE PenEsMaxFr = 0; 
-			END; 
-
-			%IF &SC = C %THEN %DO; 
-
-			IF	PenTypes IN ('AGE') OR DvaTypes IN ('SERVICE') THEN DO ;
-				IF RandAgeEsGfths < AgeEsGfthrProb THEN PenEsMaxFs = PenEsMax&sc.F ;
-				ELSE PenEsMaxFs = 0; 
-			END; 
-
-			%END; 
-
-			IF PenTyper IN ('DSP') OR DvaTyper IN ('DVASERVDIS') THEN DO ;
-				IF RandDspEsGfthr < DspEsGfthrProb THEN PenEsMaxFr = PenEsMax&sc.F ;
-				ELSE PenEsMaxFr = 0; 
-			END; 
-
-			%IF &SC = C %THEN %DO; 
-
-			IF PenTypes IN ('DSP') OR DvaTypes IN ('DVASERVDIS') THEN DO ;
-				IF RandDspEsGfths < DspEsGfthrProb THEN PenEsMaxFs = PenEsMax&sc.F ;
-				ELSE PenEsMaxFs = 0; 
-			END; 
-
-			%END; 
-
-			IF PenTyper IN ('CARER') THEN DO ;
-				IF RandCarerEsGfthr < CarerEsGfthrProb THEN PenEsMaxFr = PenEsMax&sc.F ;
-				ELSE PenEsMaxFr = 0; 
-			END; 
-			
-			%IF &SC = C %THEN %DO; 
-
-			IF PenTypes IN ('CARER') THEN DO ;
-				IF RandCarerEsGfths < CarerEsGfthrProb THEN PenEsMaxFs = PenEsMax&sc.F ;
-				ELSE PenEsMaxFs = 0; 
-			END; 
-
-			%END; 
-			
-			%IF &SC = C %THEN %DO; 
-
-			IF PenTypes IN ('WIFE') THEN DO ;
-				IF RandWifeEsGfths < WifeEsGfthrProb THEN PenEsMaxFs = PenEsMax&sc.F ;
-				ELSE PenEsMaxFs = 0; 
-			END;
-
-			%END; 
-
-		%END; 
-
-		%ELSE %IF &RunEs = Y %THEN %DO;
+		%IF &RunEs = Y %THEN %DO;
 
 			PenEsMaxFr = PenEsMax&sc.F ;
 
@@ -249,7 +191,9 @@ OPTIONS MINOPERATOR ;
 
 		%END; 
 
-	 	%ELSE %IF &RunEs = N %THEN %DO;
+
+
+	 %ELSE 	%IF &RunEs = N %THEN %DO;
 
 	 		PenEsMaxFr = 0;
 
@@ -366,19 +310,37 @@ OPTIONS MINOPERATOR ;
 %MACRO PenReduction( OrdIncome, UseAssetTest ) ;
 
 	* Assign assets test thresholds ;
-	IF Coupleu = 0 AND Occupancyu <= 2 THEN PenAssThr = PenAssThrHoS ;
-	ELSE IF Coupleu = 0 AND Occupancyu > 2 THEN PenAssThr = PenAssThrNhoS ;
-	ELSE IF Coupleu = 1 AND Occupancyu <= 2 THEN PenAssThr = PenAssThrHoC ;
-	ElSE IF Coupleu = 1 AND Occupancyu > 2 THEN PenAssThr = PenAssThrNhoC ;
-	
-	* Calculate assets in excess of the threshold, and apply rounding factor ;
-	AssetsExcess = AssetsPenTest - PenAssThr ;
-	AssetsExcess = FLOOR(AssetsExcess / PenAssRnding) * PenAssRnding ;
+	IF Coupleu = 0 THEN DO;
+		IF Occupancyu <= 2 THEN PenAssThr = PenAssThrHoS ;
+		ELSE PenAssThr = PenAssThrNhoS ;
 
-  * Calculate dollar amount pension is reduced by for each person under income and assets
-    test. ;
-	PenRedIncTest = ( &OrdIncome - PenThrF ) * PenTpr ;
-	PenRedAssetTest = AssetsExcess * PenAssTpr ;
+		* Calculate the reduction due to assets (1064-G3) ;
+		AssetsExcess = AssetsPenTest - PenAssThr ;
+
+		* Note that we disregard any part of the excess that is not a multiple of the rounding factor (1064-G7) ;
+		AssetsExcess = FLOOR(AssetsExcess / PenAssRnding) * PenAssRnding ;
+
+  		* Calculate dollar amount pension is reduced by for each person under income and assets
+    	test. ;
+		PenRedIncTest = ( &OrdIncome - PenThrF ) * PenTpr ;
+		PenRedAssetTest = AssetsExcess * PenAssTpr ;
+	END;
+
+	IF Coupleu = 1 THEN DO;
+		IF Occupancyu <= 2 THEN PenAssThr = PenAssThrHoC ;
+		ElSE PenAssThr = PenAssThrNhoC ;
+		* Calculate the reduction due to assets (1064-G3) ;
+		AssetsExcess = AssetsPenTest - PenAssThr ;
+
+		* Note that we disregard any part of the excess that is not a multiple of the rounding factor (1064-G7) ;
+		AssetsExcess = FLOOR(AssetsExcess / PenAssRnding) * PenAssRnding ;
+
+  		* Calculate dollar amount pension is reduced by for each person under income and assets
+    	test. ;
+		PenRedIncTest = ( &OrdIncome - PenThrF ) * PenTpr ;
+		PenRedAssetTest = (AssetsExcess * PenAssTpr)/2 ;
+	END;
+
 
   * Apply assets test if specified in call (Y/N) ;
 	%IF &UseAssetTest = Y %THEN %DO ;
@@ -416,7 +378,7 @@ OPTIONS MINOPERATOR ;
   * Assign reduction amount between the different components. Person gets assigned 
 	to one of the cases below, based on the total size of the reduction in their 
 	entitlement due to means tests. ;    	
-  * Pension components are withdrawn in the following order:                 
+  * Pension components are tapered in the following order:                 
     the basic pension, the pension supplement basic amount, the remaining        
     amount, Rent Assistance, the minimum amount, and the energy supplement.      
     The minimum amount and energy supplement are not tapered. ;  

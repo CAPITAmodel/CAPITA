@@ -4,7 +4,7 @@ PROC FCMP OUTLIB = Work.Functions.Tax ;
     * Define net income tax equation given SAPTO and LITO ;
 
     FUNCTION SaptoRebThr( TaxIncAr , CumTax1 , TaxRate1 , TaxThr1 , CumTax2 , TaxRate2 , TaxThr2 , 
-                          LitoMax , LitoTpr , LitoThr , SaptoMaxCr ) ;
+                          LitoMax , LitoTpr1, LitoTpr2 , LitoThr1 , LitoThr2, SaptoMaxCr ) ;
 
         * Define gross income tax equation ;
 
@@ -16,11 +16,9 @@ PROC FCMP OUTLIB = Work.Functions.Tax ;
 
         * Define LITO equation ;
 
-        LITO = MAX( 0 , LitoMax - MAX( 0 , LitoTpr * ( TaxIncAr - LitoThr ) ) ) ;
+  		LITO = MAX( 0 , LitoMax - MAX( 0 , MAX(0, LitoTpr2 * ( TaxIncAr - LitoThr2 ))+ LitoTpr1 * ((MIN( LitoThr2, TaxIncAr) - LitoThr1 ) ) )) ;
 
-        * Combine the above defined equations to get net income tax equation ;
-
-        NetIncTax = GrossIncTax - SAPTO - LITO ;
+        NetIncTax = GrossIncTax - SAPTO - LITO  ;
 
         RETURN( NetIncTax ) ;
 
@@ -29,7 +27,7 @@ PROC FCMP OUTLIB = Work.Functions.Tax ;
     * Define solve function to calculate the effective tax free threshold given SAPTO and LITO (that is the SAPTO Rebate Threshold) ;
 
     FUNCTION SolveSaptoRebThr( CumTax1 , TaxRate1 , TaxThr1 , CumTax2 , TaxRate2 , TaxThr2 , 
-                               LitoMax , LitoTpr , LitoThr , SaptoMaxCr ) ;
+                          LitoMax , LitoTpr1, LitoTpr2 , LitoThr1 , LitoThr2, SaptoMaxCr  ) ;
 
         * Set net income tax to 0 and set initial guess value to a reasonable value ;
         * Setting the initial guess value helps with the convergence of the final result ;
@@ -44,7 +42,8 @@ PROC FCMP OUTLIB = Work.Functions.Tax ;
 
         SolveSaptoRebThr = SOLVE( 'SaptoRebThr' , { InitialGuess, . , . , MaxIterations } , NetIncTax , . , 
                                   CumTax1 , TaxRate1 , TaxThr1 , CumTax2 , TaxRate2 , TaxThr2 , 
-                                  LitoMax , LitoTpr , LitoThr , SaptoMaxCr ) ;
+                                  LitoMax , LitoTpr1 , LitoTpr2 , LitoThr1 ,  LitoThr2, SaptoMaxCr   
+								 ) ;
 
         RETURN( SolveSaptoRebThr ) ;
 
@@ -53,3 +52,4 @@ PROC FCMP OUTLIB = Work.Functions.Tax ;
 QUIT ;
 
 OPTIONS CMPLIB = Work.Functions ;
+

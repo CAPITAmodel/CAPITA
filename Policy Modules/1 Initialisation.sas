@@ -5,9 +5,10 @@
 *               modules.                                                             *
 **************************************************************************************;
 
+
 **************************************************************************************
 *   Macro:   RunInitialisation                                                       *
-*   Purpose: Coordinate calculation                                              * 
+*   Purpose: Coordinate  calculation                                              * 
 *************************************************************************************;;
 %MACRO RunInitialisation ;
 
@@ -55,7 +56,7 @@
                            TempBudgRepLevF -
                            GrossIncTaxA -
                            GrossIncTaxF -
-                           IncAllTestF -
+						   IncAllTestF -
                            IncDispA -
                            IncDispF -
                            IncMLSA -
@@ -78,10 +79,24 @@
                            IncWBF -
                            LevyAndChargeA -
                            LevyAndChargeF -
+						   LamitoBase -
+						   LamitoMax - 
+					       LamitoThr1 - 
+						   LamitoThr2 -
+						   LamitoTpr1 -
+						   LamitoTpr2 -
+                           LamitoA -
+                           LamitoFlag -
+                           LamitoF -
+						   LITOMax - 
+						   LITOThr1 - 
+						   LITOThr2 - 
+						   LITOTpr1 - 
+						   LITOTpr2 - 
                            LitoA -
                            LitoFlag -
                            LitoF -
-                           MedLevA -
+						   MedLevA -
                            MedLevSurA -
                            MedLevSurRatePsn -
                            MedLevSurTier1Psn -
@@ -115,6 +130,8 @@
                            UsedFrankCrF -
                            UsedLitoA -
                            UsedLitoF -
+						   UsedLamitoA -
+						   UsedLamitoF -
                            UsedTotTaxOffsetA -
                            UsedTotTaxOffsetF -
                            XRefTaxOffsetA -
@@ -179,7 +196,8 @@
                             CareAllA -
                             CareAllF -
                             CareAllflag -
-                            CarerPenBasicA -
+							CareAllIncThrA - 
+							CarerPenBasicA -
                             CarerPenBasicF -
                             CarerPenEsA -
                             CarerPenEsF -
@@ -244,7 +262,8 @@
                             FtbaF -
                             FtbbA -
                             FtbbF -
-                            IncSupBonA -
+							HelpPayA - 
+							IncSupBonA -
                             IncSupBonF -
                             IncSupBonFlag -
                             MawtoA -
@@ -378,7 +397,9 @@
                             WidowTotF -
                             WidowTotA -
    						    YaMaintIncThrA -	
- 							AllMaintIncTestResA -
+
+/*Jul 2015 Budget 2015 YA maintenance income test*/
+   							AllMaintIncTestResA -
 						    AllMaintIncTestResF -
 						    AllPareIncTestResA -
 						    AllPareIncTestResF -
@@ -627,6 +648,8 @@
                                 UsedBentoFu -                                
                                 UsedItem20Au -
                                 UsedItem20Fu -
+                                UsedLamitoAu -
+                                UsedLamitoFu -
                                 UsedLitoAu -
                                 UsedLitoFu -
                                 UsedSaptoAu -
@@ -644,6 +667,8 @@
                                 YAStudTotAu - 
                                 YAStudTotFu -
 
+                                /*16 Jun 2015, Budget 2015-16, maintenance income test (unenacted) */
+
 								DepsMaint -
 								DepsMaintFlagr_ -
 								DepsMaintOwnIU -
@@ -652,6 +677,9 @@
 								DepsYaMaintFlagr_ -
 								IncMaintPerDep -
 						
+								/*  15 Jan 2015, Budget 2014, #15.2 */
+                                /* Single Parent Supplement */
+
                                 /* For childcare module */
                                 /* Current childcare policy */
                                 CcbMaxHrW -
@@ -1021,15 +1049,6 @@
 		IUWeightSu = "IU weight (SIH)"
 		Kids0to14u = "Number of kids aged 0-14 in IU"
 		Kids0to15u = "Number of kids aged 0-15 in IU"
-		Kids0to2Iu = "Number of kids aged 0-2 in IU"
-		Kids0to2Su = "Number of kids aged 0-2 in IU on SIH"
-		Kids10to14Iu = "Number of kids aged 10-14 in IU"
-		Kids10to14Su = "Number of kids aged 10-14 in IU on SIH"
-		Kids15to24Su = "Number of kids aged 15-24 in IU on SIH"
-		Kids3to4Iu = "Number of kids aged 3-4 in IU"
-		Kids3to4Su = "Number of kids aged 3-4 in IU on SIH"
-		Kids5to9Iu = "Number of kids aged 5-9 in IU"
-		Kids5to9Su = "Number of kids aged 5-9 in IU on SIH"
 		LfStatr = "Labour force status ref"
 		LfStats = "Labour force status sps"
 		LfStat1 = "Labour force status dep 1"
@@ -1078,7 +1097,7 @@
 		LfStat3 = "Labour force status dep 3"
 		LfStat4 = "Labour force status dep 4"
 
-	  /*  The following are not in the cameo capita_outfile, but the corresponding reference/spouse variables are */
+	  /* ### The following are not in the cameo capita_outfile, but the corresponding reference/spouse variables are */
 		AgePenSW1 = "Income from age pension on the SIH (weekly) dep 1"
 		AgePenSW2 = "Income from age pension on the SIH (weekly) dep 2"
 		AgePenSW3 = "Income from age pension on the SIH (weekly) dep 3"
@@ -1435,41 +1454,41 @@
 	CareAllFs = "Carer Allowance fortnightly rate sps"
 	CareAllflagr = "Carer Allowance eligibility ref"
 	CareAllflags = "Carer Allowance eligibility sps"
-	CarerPenBasicAr = "Basic annual Carer Payment ref"
-	CarerPenBasicAs = "Basic annual Carer Payment sps"
-	CarerPenBasicFr = "Basic fortnightly Carer Payment ref"
-	CarerPenBasicFs = "Basic fortnightly Carer Payment sps"
-	CarerPenEsAr = "Energy supplement paid annually with Carer Payment ref"
-	CarerPenEsAs = "Energy supplement paid annually with Carer Payment sps"
-	CarerPenEsFr = "Energy supplement paid fortnightly with Carer Payment ref"
-	CarerPenEsFs = "Energy supplement paid fortnightly with Carer Payment sps"
-	CarerPenSupBasicAr = "Final pension basic supplement paid annually with Carer Payment ref"
-	CarerPenSupBasicAs = "Final pension basic supplement paid annually with Carer Payment sps"
-	CarerPenSupBasicFr = "Final pension basic supplement paid fortnightly with Carer Payment ref"
-	CarerPenSupBasicFs = "Final pension basic supplement paid fortnightly with Carer Payment sps"
-	CarerPenSupMinAr = "Annual minimum pension supplement for Carer Payment ref"
-	CarerPenSupMinAs = "Annual minimum pension supplement for Carer Payment sps"
-	CarerPenSupMinFr = "Fortnightly minimum pension supplement for Carer Payment ref"
-	CarerPenSupMinFs = "Fortnightly minimum pension supplement for Carer Payment sps"
-	CarerPenSupRemAr = "Annual remaining pension supplement for Carer Payment ref"
-	CarerPenSupRemAs = "Annual remaining pension supplement for Carer Payment sps"
-	CarerPenSupRemFr = "Fortnightly remaining pension supplement for Carer Payment ref"
-	CarerPenSupRemFs = "Fortnightly remaining pension supplement for Carer Payment sps"
+	CarerPenBasicAr = "Basic annual Carer Pension ref"
+	CarerPenBasicAs = "Basic annual Carer Pension sps"
+	CarerPenBasicFr = "Basic fortnightly Carer Pension ref"
+	CarerPenBasicFs = "Basic fortnightly Carer Pension sps"
+	CarerPenEsAr = "Energy supplement paid annually with Carer Pension ref"
+	CarerPenEsAs = "Energy supplement paid annually with Carer Pension sps"
+	CarerPenEsFr = "Energy supplement paid fortnightly with Carer Pension ref"
+	CarerPenEsFs = "Energy supplement paid fortnightly with Carer Pension sps"
+	CarerPenSupBasicAr = "Final pension basic supplement paid annually with Carer Pension ref"
+	CarerPenSupBasicAs = "FInal pension basic supplement paid annually with Carer Pension sps"
+	CarerPenSupBasicFr = "Final pension basic supplement paid fortnightly with Carer Pension ref"
+	CarerPenSupBasicFs = "Final pension basic supplement paid fortnightly with Carer Pension sps"
+	CarerPenSupMinAr = "Annual minimum pension supplement for Carer pension ref"
+	CarerPenSupMinAs = "Annual minimum pension supplement for Carer pension sps"
+	CarerPenSupMinFr = "Fortnightly minimum pension supplement for Carer pension ref"
+	CarerPenSupMinFs = "Fortnightly minimum pension supplement for Carer pension sps"
+	CarerPenSupRemAr = "Annual remaining pension supplement for Carer pension ref"
+	CarerPenSupRemAs = "Annual remaining pension supplement for Carer pension sps"
+	CarerPenSupRemFr = "Fortnightly remaining pension supplement for Carer pension ref"
+	CarerPenSupRemFs = "Fortnightly remaining pension supplement for Carer pension sps"
 	CarerPenTaxFlagr = "Carer payment taxable flag ref"
 	CarerPenTaxFlags = "Carer payment taxable flag sps"
-	CarerPharmAllFr = "Pharm Allowance fortnightly for Carer Payment ref"
-	CarerPharmAllFs = "Pharm Allowance fortnightly for Carer Payment sps"
-	CarerRAssAr = "Rent Assistance annual for Carer Payment ref"
-	CarerRAssAs = "Rent Assistance annual for Carer Payment sps"
-	CarerRAssFr = "Rent Assistance fortnightly for Carer Payment ref"
-	CarerRAssFs = "Rent Assistance fortnightly for Carer Payment sps"
-	CarerTotAr = "Total Carer Payment annual ref"
-	CarerTotAs = "Total Carer Payment annual sps"
-	CarerTotAu = "EMTR for Carer Payment"
-	CarerTotAu = "Total Carer Payment annual"
-	CarerTotFr = "Total Carer Payment fortnight ref"
-	CarerTotFs = "Total Carer Payment fortnight sps"
-	CarerTotFu = "Total Carer Payment fortnight"
+	CarerPharmAllFr = "Pharm Allowance fortnightly for Carer Pension ref"
+	CarerPharmAllFs = "Pharm Allowance fortnightly for Carer Pension sps"
+	CarerRAssAr = "Rent Assistance annual for Carer Pension ref"
+	CarerRAssAs = "Rent Assistance annual for Carer Pension sps"
+	CarerRAssFr = "Rent Assistance fortnightly for Carer Pension ref"
+	CarerRAssFs = "Rent Assistance fortnightly for Carer Pension sps"
+	CarerTotAr = "Total Carer Pension annual ref"
+	CarerTotAs = "Total Carer Pension annual sps"
+	CarerTotAu = "EMTR for Carer Pension"
+	CarerTotAu = "Total Carer Pension annual"
+	CarerTotFr = "Total Carer Pension fortnight ref"
+	CarerTotFs = "Total Carer Pension fortnight sps"
+	CarerTotFu = "Total Carer Pension fortnight"
 	CareSupAr = "Carer Supplement annual amount ref"
 	CareSupAs = "Carer Supplement annual amount sps"
 	CareSupFr = "Carer Supplement fortnightly amount ref"
@@ -2404,7 +2423,7 @@
 	IncNonTaxTranF4 = "Non taxable transfer income fortnight dep 4"
 	MedLevSurFu = "Medicare levy surcharge fortnight"
 
-/*  The following are in the variable register as basefile but also used in cameo capita_outfile */
+/* ### The following are in the variable register as basefile but also used in cameo capita_outfile */
 
 	ActualAger = "Age ref"
 	ActualAges = "Age sps"
@@ -2719,21 +2738,21 @@
 	IncWCompSPAs = "Income from regular workers comp (previous year) sps"
 	IncWCompSWr = "Income from regular workers comp (weekly) ref"
 	IncWCompSWs = "Income from regular workers comp (weekly) sps"
-	Kids0u = "Number of kids aged 0 in IU"
-	Kids10u = "Number of kids aged 10 in IU"
-	Kids11u = "Number of kids aged 11 in IU"
-	Kids12u = "Number of kids aged 12 in IU"
-	Kids13u = "Number of kids aged 13 in IU"
-	Kids14u = "Number of kids aged 14 in IU"
-	Kids1u = "Number of kids aged 1 in IU"
-	Kids2u = "Number of kids aged 2 in IU"
-	Kids3u = "Number of kids aged 3 in IU"
-	Kids4u = "Number of kids aged 4 in IU"
-	Kids5u = "Number of kids aged 5 in IU"
-	Kids6u = "Number of kids aged 6 in IU"
-	Kids7u = "Number of kids aged 7 in IU"
-	Kids8u = "Number of kids aged 8 in IU"
-	Kids9u = "Number of kids aged 9 in IU"
+	Kids0Su = "Number of kids aged 0 in IU"
+	Kids10Su = "Number of kids aged 10 in IU"
+	Kids11Su = "Number of kids aged 11 in IU"
+	Kids12Su = "Number of kids aged 12 in IU"
+	Kids13Su = "Number of kids aged 13 in IU"
+	Kids14Su = "Number of kids aged 14 in IU"
+	Kids1Su = "Number of kids aged 1 in IU"
+	Kids2Su = "Number of kids aged 2 in IU"
+	Kids3Su = "Number of kids aged 3 in IU"
+	Kids4Su = "Number of kids aged 4 in IU"
+	Kids5Su = "Number of kids aged 5 in IU"
+	Kids6Su = "Number of kids aged 6 in IU"
+	Kids7Su = "Number of kids aged 7 in IU"
+	Kids8Su = "Number of kids aged 8 in IU"
+	Kids9Su = "Number of kids aged 9 in IU"
 	MaintPaidSAr = "Maintenance paid (annual) ref"
 	MaintPaidSAs = "Maintenance paid (annual) sps"
 	MaintPaidSPAr = "Maintenance paid (previous year) ref"

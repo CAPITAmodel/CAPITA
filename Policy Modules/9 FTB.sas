@@ -1,3 +1,4 @@
+
 **************************************************************************************
 * Program:      9 FTB.sas                                                            *
 * Description:  Calculates Family Tax Benefit (FTB) entitlements.                    *
@@ -71,7 +72,7 @@ OPTIONS MINOPERATOR ;
     ************************************************************************************
     *      7.        Calculate other payments                                          *
     ************************************************************************************;
-    IF FtbaFlag = 1 and Kids0u > 0 THEN DO ;
+    IF FtbaFlag = 1 and Kids0Su > 0 THEN DO ;
 
         %BabyUpfrontPayment
 
@@ -254,8 +255,8 @@ OPTIONS MINOPERATOR ;
 
   	FtbaEndSupA = DepsFtbA * FtbaSupA;
 
-	*Budget Savings Omnibus Bill 2016,legislated in Sep 2016 
-	 From 1 July 2016, FTBA supplement not payable to customers with ATI in excess of 80,000 ;
+	*6March2017, Budget Savings Omnibus Bill 2016,legislated in Sep 2016 , 
+	 from 1 July 2016, FTBA supplement not payable to customers with ATI in excess of 80,000 ;
 	%IF (&Duration = A AND &Year >= 2016) 
 	    OR (&Duration = Q AND &Year > 2016)	
 	    OR(&Duration = Q AND &Year = 2016 AND (&Quarter = Sep OR &Quarter = Dec) ) 
@@ -264,7 +265,8 @@ OPTIONS MINOPERATOR ;
 	%END ;
 
 
-	*Budget 2015-16 - The large family supplement will cease from 1 July 2016 	
+	*7 July 2015, The large family supplement will cease from 1 July 2016 
+	(Budget 2015-16)
     For each child including and after the LfsKidsMin child ;
     IF DepsFtbA >=  LfsKidsMin 
         THEN LargeFamSupA = LfsRateA * ( DepsFtbA - ( LfsKidsMin - 1 ) ) ;
@@ -353,12 +355,12 @@ OPTIONS MINOPERATOR ;
       multiple births. We assume that if there are two newborns, they are twins. 
       Assume also that nobody takes parental leave. ;
       
-    IF Kids0u > 0 THEN DO ;
+    IF Kids0Su > 0 THEN DO ;
 
-            IF TotalKidsu = Kids0u OR Kids0u > 1 
-                THEN NewBornSupA = Kids0u * &Nbs1 ; 
+            IF TotalKidsu = Kids0Su OR Kids0Su > 1 
+                THEN NewBornSupA = Kids0Su * &Nbs1 ; 
 
-            ELSE IF Kids0u = 1 THEN NewBornSupA = Kids0u * &Nbs2 ;
+            ELSE IF Kids0Su = 1 THEN NewBornSupA = Kids0Su * &Nbs2 ;
 
     END ;
 
@@ -390,15 +392,14 @@ OPTIONS MINOPERATOR ;
 
     ELSE DO; 
 
-	*Budget 2017-18 - Align Method 1 taper rate to 30% for income over the HIFA from 1 July 2018; 
-	*Not yet legislated*; 
+	*Budget 2017-18 - Align Method 1 taper rate to 30% for income over the HIFA from 1 July 2019; 
 
-	%IF (&Duration = A AND &Year >= 2018) 
-    OR (&Duration = Q AND &Year > 2018)	
-    OR(&Duration = Q AND &Year = 2018 AND (&Quarter = Sep OR &Quarter = Dec) ) 
+	%IF (&Duration = A AND &Year >= 2019) 
+    OR (&Duration = Q AND &Year > 2019)	
+    OR(&Duration = Q AND &Year = 2019 AND (&Quarter = Sep OR &Quarter = Dec) ) 
 	%THEN %DO ;
 
-		*After 1 July 2018 apply 20% taper rate to income over income free area but below high income free area
+		*After 1 July 2019 apply 20% taper rate to income over income free area but below high income free area
 		and 30% taper rate to income over higher income free area; 
 		
 		IF FtbaTestInc < FtbaBaseBasicThr THEN 
@@ -411,8 +412,8 @@ OPTIONS MINOPERATOR ;
 
 	%ELSE %DO ;
 		
-		*Prior to 1 July 2018 apply 20% taper rate to income over income free area;
-	
+		*Prior to 1 July 2019 apply 20% taper rate to income over income free area;  
+
 		FtbaMaxIncRed 	= MAX ( 0 , ( FtbaTestInc - FtbaMaxThr ) * FtbaMaxTpr ) ;
   
 	%END; 
@@ -674,10 +675,10 @@ OPTIONS MINOPERATOR ;
 
 	    IF ( AdjTaxIncAr + AdjTaxIncAs ) <= BabyBonThr THEN DO ;
 
-	            IF TotalKidsu = Kids0u OR Kids0u > 1 
-	                THEN BabyBonusA = BabyBon1A * Kids0u ; 
+	            IF TotalKidsu = Kids0Su OR Kids0Su > 1 
+	                THEN BabyBonusA = BabyBon1A * Kids0Su ; 
 
-	            ELSE IF Kids0u = 1 THEN BabyBonusA = BabyBon2A * Kids0u ;
+	            ELSE IF Kids0Su = 1 THEN BabyBonusA = BabyBon2A * Kids0Su ;
 	    
 	    END ;
 
@@ -690,7 +691,7 @@ OPTIONS MINOPERATOR ;
 
 	    IF FtbaFinalA > 0 THEN DO ;
 
-	         NewBornUpfrontA = NewBornUpfrontRateA * Kids0u ;
+	         NewBornUpfrontA = NewBornUpfrontRateA * Kids0Su ;
 
 	         FtbaFinalA = FtbaFinalA + NewBornUpfrontA ; 
 

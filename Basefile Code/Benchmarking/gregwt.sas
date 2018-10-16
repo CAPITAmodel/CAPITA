@@ -2136,7 +2136,6 @@ do cwbygrp = 1 to cwnumby ; %* For each BY group in turn *;
              + &NEWWT*ttunvds{_unix_,ttj} ;
            %END ;
            %IF &NPREDICT>0 %THEN %DO ;
-%* *;
             ttw = (ttunpos{_unix_}-1)*&NVD+ttj+1 ;
            %END ;
           end ;
@@ -2297,7 +2296,6 @@ do cwbygrp = 1 to cwnumby ; %* For each BY group in turn *;
       ttpos = ttposs{ttfrom} ; %* Where the data is *;
 
       %IF &SCNUM > &CNUM %THEN %DO ;
-       %* *;
        %IF &WTDRES %THEN if cwgrpflg = 4 & cw_iter=0 then ;
        if 1
        %DO I = &CNUM+1 %TO &SCNUM ;
@@ -2338,7 +2336,6 @@ do cwbygrp = 1 to cwnumby ; %* For each BY group in turn *;
           ttcpos = ttposs{tti} ; %* Where to aggregate to *;
 
           %IF &SCNUM > &CNUM %THEN %DO ;
-           %* *;
            if ttdposs{ttpos}=-1
            %DO I = &CNUM+1 %TO &SCNUM ;
             & ttc&I{tti} = &&CTYP&I %* Missing *;

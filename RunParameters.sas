@@ -12,10 +12,10 @@
 **********************************************************************************;
 
 * Include the DefineCapitaDirectory code to set the main CAPITA drive ;
-%INCLUDE "\\CAPITAlocation\DefineCapitaDirectory.sas" ;
+%INCLUDE "\\CAPITAlocation\Public\DefineCapitaDirectory.sas" ;
 
 * Specify the location of Excel workbook containing the parameters ;
-%LET ParamWkBk = \\CAPITAlocation\CPS v17-09-12.xlsb ;
+%LET ParamWkBk = \\CAPITAlocation\CPS v18-10-15.xlsb ;
 
 * Specify common drive location ;
 %LET AllParmDrive = &CapitaDirectory.Parameter\ ;
@@ -45,7 +45,8 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
                   Childcare
                   SIFS 
                   TaxSchedule 
-                  MedicareAndLevies 
+                  MedicareAndLevies
+				  HELP 
                   RebatesOffsets
                   FTBA 
                   FTBB 
@@ -74,7 +75,8 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
                   TaxSchedule 
                   MedicareAndLevies 
                   RebatesOffsets
-                  FTBA_A 
+				  HELP
+			  	  FTBA_A 
                   FTBB_A 
                   BabyBonus_A 
                   SchoolKidsBonus_A 
@@ -90,7 +92,7 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
 *                                                                                 *
 **********************************************************************************;
 
-* Read in parameters from a spreadsheet. ;
+* Read in parameters from  a spreadsheet. ;
 
 %MACRO ImportXls( Period ) ;
 
@@ -128,9 +130,9 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
         %ELSE %DO ;
 
         * Use PROC SQL rather than MERGE because some datasets have observations covering different periods. ;
-        * For example, pensions has one observation per indexation quarter, while tax schedule has one observation 
-          per financial year. We want the appropriate tax parameters read in for each quarter in this case, something 
-          easy to arrange with SQL (note we assume the first table read in is quarterly) ;
+        * For example, pensions has one observation per indexation quarter, while tax schedule has one observation ;
+        * per financial year. We want the appropriate tax parameters read in for each quarter in this case, something ;
+        * easy to arrange with SQL (note we assume the first table read in is quarterly) ;
 
             PROC SQL UNDO_POLICY = NONE ;   * The UNDO_POLICY option prevents warnings in the log about recursive referencing of AllParams ;
                 * Renaming of date variables is done to avoid warnings in the log about multiple versions of these vars ;
@@ -172,21 +174,4 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
 
 * Generate annualised parameters data sets ;
 %ImportXls( A )
-
-*Import data containing probabibilities of being grandfathered to receive the ES for different payments - not available in this option; 
-
-/*%MACRO ImportProbGrndfthr ( Period ) ; */
-/**/
-/*	 PROC IMPORT */
-/*		 OUT = AllParm&Period..ProbGrndfthr_&Period*/
-/*		 DATAFILE = "&AllParmDrive.Grandfathering ES\ProbGrndfth.xlsx"        */
-/*		 DBMS = EXCELCS REPLACE ;*/
-/*		 RANGE = "A1:O33" ;     */
-/*		 SHEET = "&Period" ;*/
-/*	 RUN;*/
-/**/
-/*%MEND ImportProbGrndfthr ; */
-/**/
-/*%ImportProbGrndfthr (Q); */
-/*%ImportProbGrndfthr (A); */
 

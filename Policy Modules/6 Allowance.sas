@@ -201,8 +201,7 @@ OPTIONS MINOPERATOR ;
 
     END ;
 
-	* Newstart Allowance will be known as JobSeeker Payment after 20 March 2020;
-	* 2017-18 Budget - Working Age Payment Reforms - Not yet legislated *; 
+	* Newstart Allowance will be known as JobSeeker Payment after 20 March 2020; 
     ELSE IF AllowTypes = 'NSA' THEN DO ;
 
         %AllowCalc( Nsa , s )
@@ -268,7 +267,6 @@ END ;
 
     * Flag receipt on the SIH for the Sickness Allowance ;
 	* 2017-18 Budget - Working Age Payment Reforms - Sickness Allowance recipients will transition to Newstart Allowance/JobSeeker Payment on March 2020;
-	* Not yet legislated *; 
 
 %IF (&Duration = A AND &Year < 2020) 
     OR (&Duration = Q AND &Year < 2020) 	
@@ -291,7 +289,6 @@ END ;
 
     * Flag receipt on the SIH for the Partner Allowance ;
 	* 2017-18 Budget - Working Age Payment Reforms - Partner Allowance will cease on 1 January 2022;
-	* Not yet legislated *; 
 
 %IF (&Duration= A AND &Year < 2022) 
 	OR (&Duration = Q AND &Year < 2022) 
@@ -367,7 +364,7 @@ END ;
     
     * Determine if person is eligible for Parenting Payment Partnered ;
     ELSE IF ( ParPaySW&psn > 0 OR NsaSW&psn > 0 )             	  /* Receiving Parenting Payment or NSA on SIH (accounts for transitions between NSA and PPP) */ 
-        %IF &psn = r %THEN %DO ;                                  /* PPP to lowest income earner in a couple   */            
+        %IF &psn = r %THEN %DO ;                                /* PPP to lowest income earner in a couple   */            
             AND IncOrdFr < IncOrdFs            
         %END ; 
 		%ELSE %IF &psn = s %THEN %DO ;            
@@ -397,8 +394,7 @@ END ;
         OR PpGrandfatherFlag&psn = 1                   /* Sole parents who are not eligible for PPS                                               */
 		OR (WidAllSW&psn > 0 AND ActualAge&psn < WidAllMinAge)	/*Receiving Widow Allowance on the SIH but below minimum age*/				   	
 
-		/*2017-18 Budget - Working Age Payment Reforms - transition Wife Pensioners (not already transitioned onto Carer Payment) and Sickness Allowance recipients onto Newstart Allowance/JobSeeker Payment after March 2020*/
-		/* Not yet legislated */	
+		/*2017-18 Budget - Working Age Payment Reforms - transition Wife Pensioners (not already transitioned onto Carer Payment) and Sickness Allowance recipients onto Newstart Allowance/JobSeeker Payment after March 2020*/	
 				%IF (&Duration = A AND &Year >= 2020) 
 				    OR (&Duration = Q AND &Year > 2020) 	
 				    OR (&Duration = Q AND &Year = 2020 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
@@ -411,13 +407,13 @@ END ;
 			)	
 		/*End*/
 
-        AND                                            /* Person of right age    		  */
+        AND                                            /* Person of right age                                                                     */
       ( ( Sex&psn = 'F' AND UnempIndepAge <= ActualAge&psn < FemaleAgePenAge ) OR        
         ( Sex&psn = 'M' AND UnempIndepAge <= ActualAge&psn < MaleAgePenAge   ) ) 
-        AND StudyType&psn NOT IN ( 'SS' , 'FTNS' )     /* Not full time student           */                                                        
-        AND DvaType&psn     = ''                       /* Not receiving DVA Entitlement   */                                                        
-        AND PenType&psn     = ''                       /* Not receiving DSS Pension       */                                                                                    
-        AND AllowType&psn   = ''                       /* Not yet assigned a DSS allowance*/                                                         
+        AND StudyType&psn NOT IN ( 'SS' , 'FTNS' )     /* Not full time student                                                                   */
+        AND DvaType&psn     = ''                       /* Not receiving DVA Entitlement                                                           */
+        AND PenType&psn     = ''                       /* Not receiving DSS Pension                                                               */                            
+        AND AllowType&psn   = ''                       /* Not yet assigned a DSS allowance                                                        */ 
     THEN DO ;
 
         AllowType&psn = 'NSA' ;
@@ -428,7 +424,6 @@ END ;
 
     * Determine if person is eligible for Widow Allowance ;
 	* 2017-18 Budget - Working Age Payment Reforms - Widow Allowance will cease on 1 January 2022*; 
-	* Not yet legislated *; 	
 
 %IF (&Duration= A AND &Year < 2022) 
 	OR (&Duration = Q AND &Year < 2022) 
@@ -475,7 +470,7 @@ END ;
         %IF &psn IN ( r , s ) %THEN %DO ;
 
             AND DvaType&psn = ''                 /* Not receiving DVA payments  */
-            AND PenType&psn     = ''             /* Not receiving a DSS Pension*/                            
+            AND PenType&psn     = ''                 /* Not receiving a DSS Pension*/                            
 
         %END ;   
 
@@ -538,7 +533,7 @@ END ;
    IF &Couple = 0 THEN DO ; *Start Single ;
  
        IF &DepChild = 0 THEN DO ; *start no dependent children ; 
-          * Start at-home in parental income unit dependants;
+          * Start at-home in parental income unit dependents;
            IF FamPos&psn IN ( 'NONDEPCHILD' , 'DEPCHILD' ) THEN DO ; 
               * 16-17 year old at home ;
                IF ActualAge&psn < 18 THEN AllowSubType&psn = 'YNGAH' ; 
@@ -549,7 +544,7 @@ END ;
 			        * At-home / same family independents ; 
     				ELSE IF WrkForceIndep&psn = 1 THEN AllowSubType&psn = 'SINGNODEPS' ; 
 
-           END ; * End at-home parental income unit dependants ;      
+           END ; * End at-home parental income unit dependents ;      
  
           * Away-from-home independents ; 
            ELSE IF WrkForceIndep&psn = 1 THEN AllowSubType&psn = 'SINGNODEPS' ; 
@@ -576,7 +571,7 @@ END ;
 
            END ;
 
-       END ; *end no dependants ;
+       END ; *end no dependents ;
 
        ELSE IF &DepChild > 0 THEN AllowSubType&psn = 'SINGDEPS' ;  
 
@@ -840,50 +835,13 @@ END ;
     %END ;   
         THEN PharmAllMaxF&psn = PharmAllMax&sc.F ;
 
-	*Cease Energy Supplement for new claimants from 20 September 2017*; 
-	*Social Services Legislation Amendment (Ending Carbon Tax Compensation) Bill 2017 - not yet legislated*; 
-
 	/*Assign Energy Supplement based on grandfathering test*/
 	%IF (&Duration = A AND &Year  >= 2017 
 	    OR &Duration = Q AND &Year > 2017 	
 	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
 	%THEN %DO ;
 
-		%IF &RunEs = G %THEN %DO; 
-
-			IF	AllowType&psn IN ('NSA') THEN DO ;
-				IF RandNsaEsGfth&psn < NsaEsGfthrProb THEN AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ;
-				ELSE AllEsMaxF&psn = 0; 
-			END; 
-
-			IF	AllowType&psn IN ('YAOTHER') THEN DO ;
-				IF RandYaotherEsGfth&psn < YaotherEsGfthrProb THEN AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ;
-				ELSE AllEsMaxF&psn = 0; 
-			END; 
-
-			IF	AllowType&psn IN ('YASTUD') THEN DO ;
-				IF RandYastudyEsGfth&psn < YastudyEsGfthrProb THEN AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ;
-				ELSE AllEsMaxF&psn = 0; 
-			END; 
-
-			IF	AllowType&psn IN ('AUSTUDY') THEN DO ;
-				IF RandAustudyEsGfth&psn < AustudyEsGfthrProb THEN AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ;
-				ELSE AllEsMaxF&psn = 0; 
-			END; 
-
-			IF	AllowType&psn IN ('WIDOW') THEN DO ;
-				IF RandWidowEsGfth&psn < WidowEsGfthrProb THEN AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ;
-				ELSE AllEsMaxF&psn = 0; 
-			END; 
-
-			IF	AllowType&psn IN ('PPP') THEN DO ;
-				IF RandPppEsGfth&psn < PppEsGfthrProb THEN AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ;
-				ELSE AllEsMaxF&psn = 0; 
-			END; 
-
-		%END; 
-
-		%ELSE %IF &RunEs = Y %THEN %DO; 
+	 %IF &RunEs = Y %THEN %DO; 
 
 			AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ; 
 
@@ -1352,7 +1310,7 @@ END ;
 
 **********************************************************************************
 *   Macro:   YaParIncTestFam                                                     *
-*   Purpose: Calculates family level information for students 1 - 4 and those   *
+*   Purpose: Calculates familiy level information for students 1 - 4 and those   *
 *            in separate income units for calculating YA parental income test    *
 *            reduction amounts. Retains family level level information of        *
 *            MaxFamYaF and AllPareIncTestExF for own units.                      *
@@ -1374,7 +1332,7 @@ END ;
     IF ActualAge1 > 0 OR NumIUu > 1 THEN DO ; 
 
       * Work out YA outcome for students 1 to 4 in the parents income unit ;
-      * Only work out outcomes for student dependants 1 to 4 if they exist ;
+      * Only work out outcomes for student dependents 1 to 4 if they exist ;
         %DO i = 1 %TO 4 ;
 
             IF ActualAge&i > 0 THEN DO ;
@@ -1390,7 +1348,7 @@ END ;
         RETAIN MaxFamYaF AllPareIncTestExF AllPareIncTestExA ;
 
       * Check to see if there are multiple income units in the family ;
-      * This is so we can include dependants in their own income unit (both 
+      * This is so we can include dependents in their own income unit (both 
         at-home and away-from-home) in the calculation of the parental 
         income test reduction. ;
         IF NumIUu > 1 THEN DO ;
@@ -1431,16 +1389,16 @@ END ;
 													%END; )) 
                 POINT = Pointer ;
 
-              * Only work out YA outcomes for dependants as independent young 
+              * Only work out YA outcomes for dependents as independent young 
                 people are not included in the parental income test ;
                 IF WrkForceIndepr_ = 0 THEN DO ;
 
                   * Initialise PenType, AllowType and AllowSubType variables for 
-                    dependants in their own income unit each time a new dependent
-                    is read in. This is so the dependants do not get assigned the 
+                    dependents in their own income unit each time a new dependent
+                    is read in. This is so the dependents do not get assigned the 
                     AllowType or PenType variable of the dependent before them. 
                     ( Noting that they have not passed through the Pension 
-                    eligibility macro.) ;
+                    eligibility macro. ;
                     PenTyper_ = '' ;
                     AllowTyper_ = '' ;
                     AllowSubTyper_ = '' ;
@@ -1451,7 +1409,7 @@ END ;
                         
                     IF AllowTyper_ = 'YAOTHER' THEN DO ; 
 
-                      * At-home dependants will be either YNGAH or OLDAH ;
+                      * At-home dependents will be either YNGAH or OLDAH ;
                         IF AllowSubTyper_ = 'YNGAH' THEN DO ;
 
                             %AllParmAlloc( r_ , YngUnemp , YngAH , S )
@@ -1483,7 +1441,7 @@ END ;
                     END ;
 
                   * If person receives an allowance add their maximum rates of YA
-                    to the familys pool. ;
+                    to the families pool. ;
                     IF AllowTyper_ IN( 'YASTUD' , 'YAOTHER' ) 
                     AND AllowSubTyper_ IN( 'YNGAH' , 'OLDAH' )
                     THEN DO ;
@@ -1513,7 +1471,7 @@ END ;
 
     IF FIRST.FamID = 1 THEN DO ;
 
-        * 2015-16 Budget measure - passed on 12 November 2015*
+        * 2015-16 Budget measure p156 (passed on 12 November 2015)
         * Include all FTB-A max rate payments in the family into the YA parental pool.
           (Large family supplement not included because Gov policy is to abolish it 
           from 2016). This is calculated after MaxFamYaF has been calculated for all 
@@ -1521,11 +1479,11 @@ END ;
 
         IF &Year >= 2016 AND DepsFtba > 0 THEN DO ;
 
-            IF Kids0u > 0 THEN DO ;
+            IF Kids0Su > 0 THEN DO ;
 
-                IF TotalKidsu = Kids0u OR Kids0u > 1 THEN NewBornSupA = Kids0u * NewBornSup1A ; 
+                IF TotalKidsu = Kids0Su OR Kids0Su > 1 THEN NewBornSupA = Kids0Su * NewBornSup1A ; 
 
-                ELSE IF Kids0u = 1 THEN NewBornSupA = Kids0u * NewBornSup2A ;
+                ELSE IF Kids0Su = 1 THEN NewBornSupA = Kids0Su * NewBornSup2A ;
 
             END ;
 
@@ -1665,8 +1623,8 @@ END ;
 **********************************************************************************
 *   Macro:   YaMaintIncTestRes                                                   *
 *   Purpose: Determines the maintenance income test result applying              *
-*            to the dependants YA based on their parents' child support amounts. *   
-*            2015-16 Budget measure (passed 12 November 2015),             		 *
+*            to the dependents YA based on their parents' child support amounts. *   
+*            2015-16 Budget measure p 156 (passed 12 November 2015),             *
 *            New maintenance income test from 1 January 2017                     *
 *********************************************************************************;;
 
@@ -1675,7 +1633,7 @@ END ;
     * Calculates maintenance income for each eligible person in the family unit ;
 
     IF ActualAge&psn > 0                /* Check if person exists */
-    AND DepsMaintFlag&psn = 1        	/* Check if dependant is eligible for maintenance income */
+    AND DepsMaintFlag&psn = 1        /* Check if dependant is eligible for maintenance income */
         THEN IncMaintA&psn = IncMaintAu_ / DepsMaint_ ; 
                                
     * If the person is eligible for youth allowance and receives maintenance income, 
@@ -1709,8 +1667,8 @@ END ;
 **********************************************************************************
 *   Macro:   YaParTestRed                                                        *
 *   Purpose: Determines the parental test reduction applying to                  *
-*            to the dependants YA based on their parents' maintenance income.    *   
-*            2015-16 Budget measure - passed 12 November 2015	              	 *
+*            to the dependents YA based on their parents' maintenance income.    *   
+*            2015-16 Budget measure p 156 (passed 12 November 2015)              *
 *            New maintenance income test from 1 January 2017                     *
 *********************************************************************************;;
 
@@ -1761,7 +1719,7 @@ END ;
 
 %MACRO DepAllowElig( psn ) ;
 
-   * Check eligibility for dependants. Dependants in their parents income unit are 
+   * Check eligibility for dependents. Dependents in their parents income unit are 
      only eligible for student Youth Allowance.  This is because non full-time 
      students 16 years and older (minimum age for YA) form their own income unit 
      according to the ABS definition ;
@@ -1797,7 +1755,7 @@ END ;
 
 **********************************************************************************
 *   Macro:   DepAllowCalc                                                        *
-*   Purpose: Calculates means test reductions and final outcomes for dependants  *
+*   Purpose: Calculates means test reductions and final outcomes for dependents  *
 *            1 to 4 in the parental income unit                                  *
 ;********************************************************************************;;
 
@@ -1806,7 +1764,7 @@ END ;
   * Calculate the personal income test reduction ;
     %IndivIncTest( &psn )
 
-  * There is no partner income test as dependants cannot have a partner for 
+  * There is no partner income test as dependents cannot have a partner for 
     social security test purposes ;
 
   * The final reduction amount is the reduction amount stemming from the test that

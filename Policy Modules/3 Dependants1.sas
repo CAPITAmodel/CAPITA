@@ -98,7 +98,7 @@
                 END ;                     /*of child support age and DepsYaMaint = 1 if */
                                           /* also YA recipient */
 
-                *MYEFO 2015-16 FTBB age eligibility up to age16 for student only;                       
+                *15Oct2015 MYEFO 2015 FTBB age eligibility up to age16 for student only;                       
                 IF ActualAge&i = 16
                 AND StudyType&i = "SS"  
                 /* can't be FTB dep if receiving pension or allowance */
@@ -230,41 +230,41 @@
                 ; 
 
       * for FTBB rate ; 
-        DepsUnder5 = Kids0u 
-                   + Kids1u 
-                   + Kids2u 
-                   + Kids3u 
-                   + Kids4u ;    
+        DepsUnder5 = Kids0Su 
+                   + Kids1Su 
+                   + Kids2Su 
+                   + Kids3Su 
+                   + Kids4Su ;    
 
       * for FTBA max rate ; 
-        DepsUnder13 = Kids0u 
-                    + Kids1u
-                    + Kids2u
-                    + Kids3u
-                    + Kids4u
-                    + Kids5u
-                    + Kids6u
-                    + Kids7u
-                    + Kids8u
-                    + Kids9u
-                    + Kids10u
-                    + Kids11u
-                    + Kids12u ;    
+        DepsUnder13 = Kids0Su 
+                    + Kids1Su
+                    + Kids2Su
+                    + Kids3Su
+                    + Kids4Su
+                    + Kids5Su
+                    + Kids6Su
+                    + Kids7Su
+                    + Kids8Su
+                    + Kids9Su
+                    + Kids10Su
+                    + Kids11Su
+                    + Kids12Su ;    
 
       * for FTBA max rate - not including 15ownIUs in this, but included in the rate sum ; 
-        Deps13_15u = Kids13u 
-                   + Kids14u 
+        Deps13_15u = Kids13Su 
+                   + Kids14Su 
                    + Kids15u ;         
 
         DepsUnder15 = DepsUnder13 
-                    + Kids13u 
-                    + Kids14u ;
+                    + Kids13Su 
+                    + Kids14Su ;
 
      * Used to assign single principal carer taper rates for NSA & Widow Allowance ; 
        DepsPrinCare = DepsUnder15 /* Dependents under 15 */
                     + Kids15u ;   /* Student dependents aged 15 years */
 
-     * Flag used to assign single principal carer taper rates for NSA & Widow Allowance ; 
+     * Flag Used to assign single principal carer taper rates for NSA & Widow Allowance ; 
        IF DepsPrinCare > 0 AND Coupleu = 0 THEN DO ;
 
             SingPrinCareFlag = 1 ;
@@ -273,17 +273,17 @@
 
       * Used for SchoolKids Bonus ;        
       * note children in own income unit are not students by definition ; 
-       DepsFtbPr = Kids5u 
-                 + Kids6u
-                 + Kids7u
-                 + Kids8u
-                 + Kids9u
-                 + Kids10u
-                 + Kids11u ;  
+       DepsFtbPr = Kids5Su 
+                 + Kids6Su
+                 + Kids7Su
+                 + Kids8Su
+                 + Kids9Su
+                 + Kids10Su
+                 + Kids11Su ;  
 
-       DepsFtbSec = Kids12u 
-                  + Kids13u 
-                  + Kids14u 
+       DepsFtbSec = Kids12Su 
+                  + Kids13Su 
+                  + Kids14Su 
                   + Kids15u  
                   + DepsFtbSec16_18  
                   + DepsFtbSec19 ;
@@ -338,7 +338,8 @@
         %END ;
 	
         IF IncMaintAu > 0 THEN DO ; 
-        *Budget 2015-16, passed 12 Nov 2015 - From 1 January 2017, maintenance income test will apply to YA;
+        *6 July 2015, From 1 January 2017, maintenance income test will apply 
+         to YA, Budget 2015-16, passed 12 November 2015 ;
             %IF &Year >= 2017 %THEN %DO ;
           * Adds up how many YA dependents of child support age ;
                 DepsYaMaint = DepsYaMaintFlag1 

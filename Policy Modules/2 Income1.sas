@@ -86,7 +86,7 @@
 
             %PrivIncome( &i )
 
-            %OrdIncome( &i )            /* Run for dependants 1 to 4. This is used in Dependants1 and Allowance modules */
+            %OrdIncome( &i )            /* Run for dependants 1 to 4. This is used in Dependents1 and Allowance modules */
 
         END ;
 
@@ -97,7 +97,7 @@
 **********************************************************************************
 *   Macro:   PrivIncome                                                          *
 *   Purpose: Calculates private income for each individual                       *
-*********************************************************************************;; 
+*********************************************************************************;;
 
 %MACRO PrivIncome( psn ) ;
 
@@ -108,7 +108,7 @@
 
                       /* Income from super and annuities */                    
                     %IF &psn IN ( r , s , r_ ) %THEN
-                    + IncTaxSuperImpA&psn ;             /* Annual income from taxable superannuation benefits. */
+                    + IncTaxSuperImpA&psn ;             /* Annual income from taxable superannuation benefits.  */
 
                       /* Investment income and dividends */
                     + IncIntA&psn                       /* Total current annual income from interest payments */
@@ -118,15 +118,15 @@
 
                       /* Other non-government income */
                     %IF &psn IN ( r , s , r_ ) %THEN
-                    + IncWCompA&psn ;                	/* Annual income from Workers compensation. */
+                    + IncWCompA&psn ;                /* Annual income from Workers compensation. */
                     %IF &psn IN ( r , s , r_ ) %THEN
                     + IncNonHHSA&psn ;                  /* Annual income from family members not living in the household. */
                     + IncOSPenSA&psn                    /* Annual income from overseas pensions and benefits. */
                     %IF &psn IN ( r , s , r_ ) %THEN
                     + IncOthRegSA&psn ;                 /* Annual income from other regular sources. */
 
-                      /* Net rent for owner occupied dwellings and subsidised private rentals */
-                    + IncNetRentA&psn ;                 /* Annual net rent income from rental property */
+                      /* Rental income */
+                    + IncNetRentA&psn ;                 /* Annual net income from property (residential and non-residential) */
                       
 
     * Non-taxable private income ;
@@ -179,6 +179,7 @@
 	* Calculate the income adjustment required for deeming - add deemed income and subtract actual financial investment income ;
 
 	DeemedCalcA = DeemedIncA - IncFinInvA ;
+
 	DeemedCalcF = DeemedCalcA / 26 ;
 
 %MEND DeemIncome ;
@@ -200,7 +201,8 @@
     OR ( DvaSPenSW&psn > 0 AND ActualAge&psn >= DVAPenAge )        /* Eligible for DVA Pension */
     THEN DO ;
 
-        * work bonus eligible income is wage, salary and business income up to work bonus amount ;
+        * work bonus eligible income is wage, salary and business income up 
+          to work bonus amount ;
         IncWBF&psn = IncWageSF&psn + IncBusLExpF&psn + TotSSNonSSF&psn ;          
 
         * Apply Work Bonus ceiling ;
@@ -220,6 +222,14 @@
         IncPrivLessWBF&psn = IncPrivF&psn ;
 
     END ;
+	%If &RunCameo = Y %then %do;
+		If ActualAge&psn > MaleAgePenAge then 
+			IncWBF&psn = MIN( IncPrivA&psn/26 , WorkBonF );
+		Else   IncWBF&psn = 0 ;
+	    
+		IncPrivLessWBF&psn = MAX( 0 , IncPrivA&psn/26 - IncWBF&psn ) ;
+	%end;
+
 
 %MEND WorkIncome ;
 
@@ -238,11 +248,9 @@
         IncOrdDvaF&psn = IncPrivLessWBF&psn        /* Work income less Work Bonus */
                        - IncMaintSF&psn            /* Maintenance income */
                        + IncSSTotSF&psn            /* Include salary sacrificed amounts (into super or fringe benefit), and non salary sacrificed amounts. */ 
-                       + NonSSTotSF&psn            /* Fringe benefit included is the non-grossed up amount, reported or not. */ 
+                       + NonSSTotSF&psn            /* Fringe benefit included are non-grossed up amount, reported or not. */ 
 
-                    /* 2015-16 MYEFO measure to include PLP and DaPP in ordinary income definition from 1 October 2016 
-					Structural policy change so reflect at 1 July 2016 for annual runs */
-					/* Passed in Budget Savings (Omnibus) Bill 2016*/
+                    /* 2015-16 MYEFO measure to include PLP and DaPP in ordinary income definition */
 					%IF ( &Duration = A AND &Year > 2015 ) 
 					OR ( &Duration = Q AND &Year > 2016 ) 
 					OR ( &Duration = Q AND &Year = 2016 AND &Quarter = Dec ) 
@@ -256,15 +264,13 @@
         IncOrdF&psn = IncPrivLessWBF&psn           /* Work income less Work Bonus */
                     - IncMaintSF&psn               /* Maintenance income */
                     + IncSSTotSF&psn               /* Include salary sacrificed amounts (into super or fringe benefit), and non salary sacrificed amounts. */
-                    + NonSSTotSF&psn               /* Fringe benefit included is the non-grossed up amount, reported or not. */
+                    + NonSSTotSF&psn               /* Fringe benefit included are non-grossed up amount, reported or not. */
  
                     /* DVA payments */
                     + ( DvaDisPenSW&psn * 2 )      /* DVA Disability Pension */
                     + ( DvaWwPenSW&psn * 2 )       /* DVA War Widow Pension */
 
-                    /* 2015-16 MYEFO measure to include PLP and DaPP in ordinary income definition from 1 October 2016 
-					Structural policy change so reflect at 1 July 2016 for annual runs */
-					/* Passed in Budget Savings (Omnibus) Bill 2016*/
+                    /* 2015-16 MYEFO measure to include PLP and DaPP in ordinary income definition 		 */
 					%IF ( &Duration = A AND &Year > 2015 ) 
 					OR ( &Duration = Q AND &Year > 2016 ) 
 					OR ( &Duration = Q AND &Year = 2016 AND &Quarter = Dec ) 
@@ -364,6 +370,7 @@
       person receives DVA service pension they cannot receive any other social 
       security payment (and hence the ordinary income definition is moot);
 
+
 %MEND IncomeTest ;
 
 *********************************************************************************************
@@ -388,7 +395,7 @@
                      + IncRoyalSPA&psn             /* Previous financial year income from royalties. */
                      + IncOthInvSPA&psn            /* Previous financial year income from other financial investments. */
                      + IncTaxSuperImpPA&psn        /* Previous financial year income form supperannuation/annuity/private pension. */
-                     + IncWCompPA&psn              /* Previous financial year income from Workers compensation. */
+                     + IncWCompPA&psn           /* Previous financial year income from Workers compensation. */
                      + IncNonHHSPA&psn             /* Previous financial year income from family members not living in the household. */
                      + IncOthRegSPA&psn            /* Previous financial year income from other regular sources. */
                      + IncOSPenSPA&psn             /* Previous financial year income from overseas pensions and benefits. */
@@ -407,7 +414,7 @@
                      /* Previous year tax deductions (use current year imputation as proxy) */
                      - DeductionPA&psn ;
 
-        * Only positive amount of previous year parental taxable income is used. Taxable loss is not included ;
+        * Only positive amount of previous year parental taxable income is used. Taxable loss is not include ;
         TaxIncPA&psn = TaxIncPA&psn * ( TaxIncPA&psn > 0 ) ;
  
     END ;  
@@ -426,7 +433,7 @@
 
     * Determine parents combined income for Youth Allowance Parental Income Test.
       The value of parental income used in the test is previous year taxable 
-      income with this years maintenance income removed and this years fringe
+      income with this year maintenance income removed and this year fringe
       benefits included as previous years information is not available. ;
 
     * Only calculate for those who MAY be dependants. Will still calculate for single grandparents in same family. ;
@@ -440,7 +447,7 @@
             AllPareTestIncA = TaxIncPAr                 /* Previous year taxable income of reference */
                             %IF &Year > 2016 %THEN %DO ;
                             + RepFbPAr                  /* 2015-16 MYEFO - Previous year reportable fringe benefit of reference (proxied by current year)
-														   to be included in the parental income test from 1 January 2017 */
+														   */
                             %END ;
                             %ELSE %DO ;
                             + AdjFbPAr                  /* Previous year adjusted fringe benefit of reference (proxied by current year) */
@@ -450,7 +457,7 @@
                             + IncMaintSPAr              /* Previous year maintenance income received by the reference */
                             - MaintPaidSPAr             /* Previous year maintenance income paid by the reference*/
                             
-                            /* 2015-16 Budget - from 1 January 2016, parental income will not be increased by any maintenance received by the parent.
+                            /* 2015-16 Budget p158  From 1 January 2016, parental income will not be increased by any maintenance received by the parent.
                                However parental income will continue to be reduced by any maintenance paid by the parent */
                                 %IF &Year >= 2016 %THEN %DO ;
                                     - IncMaintSPAr              /* Previous year maintenance income received by the reference */
@@ -464,7 +471,7 @@
                               /* Reference income */
             AllPareTestIncA = TaxIncPAr                 /* Previous year taxable income of reference */
                             %IF &Year > 2016 %THEN %DO ;
-                            + RepFbPAr                  /* 2015-16 MYEFO - Previous year reportable fringe benefit of reference (proxied by current year)
+                            + RepFbPAr                  /* 2015-16 MYEFO - Previous year reportable fringe benefit of reference (proxied by current year) 
 														   to be included in the parental income test from 1 January 2017 */
                             %END ;
                             %ELSE %DO ;
@@ -475,8 +482,8 @@
                             + IncMaintSPAr              /* Previous year maintenance income received by the reference */
                             - MaintPaidSPAr             /* Previous year maintenance income paid by the reference*/
 
-                           /* 2015-16 Budget - from 1 January 2016, parental income will not be increased by any maintenance received by the parent.
-                              However parental income will continue to be reduced by any maintenance paid by the parent */
+                            /* 2015-16 Budget From 1 January 2016, parental income will not be increased by any maintenance received by the parent.
+                               However parental income will continue to be reduced by any maintenance paid by the parent */
                                 %IF &Year >= 2016 %THEN %DO ;
                                     - IncMaintSPAr              /* Previous year maintenance income received by the reference */
                                 %END ;  
@@ -484,7 +491,7 @@
                               /* Spouse income */
                             + TaxIncPAs                 /* Previous year taxable income of spouse */
                             %IF &Year > 2016 %THEN %DO ;
-                            + RepFbPAs                  /* 2015-16 MYEFO - Previous year reportable fringe benefit of spouse (proxied by current year)
+                            + RepFbPAs                  /* 2015-16 MYEFO - Previous year reportable fringe benefit of reference (proxied by current year) 
 														   to be included in the parental income test from 1 January 2017 */
                             %END ;
                             %ELSE %DO ;
@@ -495,9 +502,9 @@
                             + IncMaintSPAs              /* Previous year maintenance income received by the spouse */
                             - MaintPaidSPAs             /* Previous year maintenance income paid by the spouse */
 
-                           /* 2015-16 Budget - from 1 January 2016, parental income will not be increased by any maintenance received by the parent.
-                              However parental income will continue to be reduced by any maintenance paid by the parent */
-								%IF &Year >= 2016 %THEN %DO ;
+                            /* 2015-16 Budget From 1 January 2016, parental income will not be increased by any maintenance received by the parent.
+                               However parental income will continue to be reduced by any maintenance paid by the parent */
+                                %IF &Year >= 2016 %THEN %DO ;
                                     - IncMaintSPAs              /* Previous year maintenance income received by the reference */
                                 %END ;
                             ; 
