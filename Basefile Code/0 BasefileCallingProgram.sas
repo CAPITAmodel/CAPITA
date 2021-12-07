@@ -1,4 +1,4 @@
-
+PROC DATASETS LIBRARY=WORK KILL NOLIST ; QUIT ;
 **************************************************************************************
 * Program:      BasefileCallingProgram.sas                                           *
 * Description:  Generates the CAPITA basefiles for the survey year and for each of   *
@@ -10,7 +10,7 @@
 OPTIONS MINOPERATOR ;  
 
 * Call the DefineCapitaDirectory.sas module to set the CAPITA drive directory ;
-%INCLUDE "\\CAPITAlocation\DefineCapitaDirectory.sas" ;  
+%INCLUDE "\\CAPITALocation\DefineCapitaDirectory.sas" ;  
 
 **************************************************************************************
 *      1.        Set the survey year, the first policy year, the random number       *
@@ -18,17 +18,17 @@ OPTIONS MINOPERATOR ;
 **************************************************************************************;
 
 * Create a macro variable called 'SurveyYear' and set it equal to the year of the SIH
-  being used. For example, currently the 2015-16 SIH is used, so the variable is set to
-  2015 ;
-%LET SurveyYear = 2015 ; 
+  being used. For example, currently the 2017-18 SIH is used, so the variable is set to
+  2017 ;
+%LET SurveyYear = 2017 ; 
 
 * Create a macro variable called 'PolicyYear' and set it equal to the first year for which
-  the policy code runs. For example, if the policy year is 2016-17 this variable is set to 2016;
-%LET PolicyYear = 2016 ;
+  the policy code runs. For example, if the policy year is 2019-20 this variable is set to 2019 ;
+%LET PolicyYear = 2018 ;
 
 * Create a macro variable called 'EndYear' and set it equal to the last year for which
-  the basefile & policy code runs. For example, if the last year to be run is 2020-21 this variable is set to 2020;
-%LET EndYear = 2021 ;
+  the basefile & policy code runs. For example, if the last year to be run is 2023-24 this variable is set to 2023;
+%LET EndYear = 2024 ;
 
 * Set whether to impute NPD records to account for aged people in nursing homes (Y), or to
   let benchmarking make up for the discrepancies (N) ;
@@ -43,14 +43,14 @@ OPTIONS MINOPERATOR ;
 **************************************************************************************;
 
 * Location of SIH and Census CURFs ;
-LIBNAME Library "\\DATAlocation\SIHdatalocation" ;                              
-LIBNAME Census "\\DATAlocation\Censusdatalocation" ; 
+LIBNAME Library "\\SIHLocation\" ;                              
+LIBNAME Census  "\\CensusLocation\" ; 
 
 * Location of all basefile modules ;
 FILENAME BaseMods "&CapitaDirectory.Basefile Code" ;
 
 * Location of Excel spreadsheet containing the basefiles parameters ;
-%LET ParamWkBk = &CapitaDirectory.Basefile Code\Parameters\Basefiles Parameters.xlsx ;
+%LET ParamWkBk = &CapitaDirectory.Basefile Code\Parameters\Basefiles Parameters.xlsx ; 
 
 * Location of imputations modules ;
 FILENAME ImpMods "&CapitaDirectory.Basefile Code\Imputations" ;
@@ -70,7 +70,7 @@ LIBNAME RFNoNPD "&CapitaDirectory.Basefile Code\Random Numbers (excluding NPDs)"
 
 * Location to export the basefiles to ;
 LIBNAME ExpNPD "&CapitaDirectory.Basefiles" ;
-LIBNAME ExpNoNPD "&CapitaDirectory.Basefiles (excluding NPDs)" ;
+LIBNAME ExpNoNPD "&CapitaDirectory.Basefiles (excluding NPDs)" ;  
 
 **************************************************************************************
 *      3.        Call the basefiles modules sequentially to create the CAPITA        *
@@ -138,7 +138,7 @@ LIBNAME ExpNoNPD "&CapitaDirectory.Basefiles (excluding NPDs)" ;
 %INCLUDE ImpMods ('8B CareDepsImp.sas') ;
 %INCLUDE ImpMods ('8C WorkforceIndependenceImp.sas') ;
 %INCLUDE ImpMods ('8D FrankCrImp.sas') ;
-%INCLUDE ImpMods ('8E TaxDeductImp.sas') ;
+%INCLUDE ImpMods ('8E TaxDeductImp.sas') ; 
 
 * Merge person level dataset onto income unit level dataset, and add household variables ;
 %INCLUDE BaseMods ('9 Merge.sas') ;
@@ -202,7 +202,6 @@ RUN ;
 
 %CreateBasefilesOutyears ;
 
-* Benchmark weights ;
 
 %GLOBAL BasefileCreate ;
 %LET BasefileCreate = Y ;
@@ -223,13 +222,18 @@ RUN ;
         %PUT Now Exporting Basefiles for years &BFYearsList ;
 
         %DO y = 1 %TO ( %SYSFUNC ( COUNTW ( &BFYearsList , '-' ) ) ) ; 
-            %LET BFYear = %SCAN ( &BFYearsList , &y , '-' ) ;        
-
+            %LET BFYear = %SCAN ( &BFYearsList , &y , '-' ) ;     
+            
+			%IF &BFYear = 2020 %THEN %DO ; /* Do not export Basefile2020 */ 
+			%END ; 
+			%ELSE %DO ; 
             DATA ExpNPD.Basefile&BFYear ;
 
                 SET Basefile&BFYear ;
+				FORMAT _ALL_ ;
 
             RUN ;
+			%END ; 
 
         %END ;
 
@@ -248,16 +252,23 @@ RUN ;
         %DO y = 1 %TO ( %SYSFUNC ( COUNTW ( &BFYearsList , '-' ) ) ) ; 
             %LET BFYear = %SCAN ( &BFYearsList , &y , '-' ) ;        
 
+			%IF &BFYear = 2020 %THEN %DO ; /* Do not export Basefile2020 */ 
+			%END ; 
+			%ELSE %DO ; 
             DATA ExpNoNPD.Basefile&BFYear ;
 
                 SET Basefile&BFYear ;
+				FORMAT _ALL_ ;
 
             RUN ;
+			%END ; 
 
         %END ;
 
     %END ;
+    
 
 %MEND ExportBasefiles ;
 
 %ExportBasefiles ;
+

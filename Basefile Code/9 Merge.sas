@@ -241,7 +241,7 @@
 
         PROC SORT DATA = Basefile&BasefileYear ;
 
-            BY HHID FamID IUID ;
+            BY HHID FamID IUID ; 
 
         RUN ;
 

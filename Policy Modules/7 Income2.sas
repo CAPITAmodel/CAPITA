@@ -219,7 +219,7 @@
                                                                the basic amount, since the components are not separable on the
                                                                SIH. */
                     + AustudyAllBasicF&psn                  /* Austudy basic rate */
-                    + NsaAllBasicF&psn                      /* Newstart Allowance basic rate */
+                    + JspAllBasicF&psn                      /* JobSeeker Payment basic rate */
                     + PartnerAllNmF&psn                     /* Partner Allowance on the SIH. The SIH amount is an estimate of
                                                                the basic amount, since the components are not separable on the
                                                                SIH. */
@@ -246,7 +246,7 @@
 
                 /* 2015-16 MYEFO measure to include PLP and DaPP in ordinary income definition from 1 October 2016 
 				Structural policy change so reflect at 1 July 2016 for annual runs */
-				/* Passed in Budget Savings (Omnibus) Bill 2016*/
+				
 				%IF ( &Duration = A AND &Year > 2015 ) 
 				OR ( &Duration = Q AND &Year > 2016 ) 
 				OR ( &Duration = Q AND &Year = 2016 AND &Quarter = Dec ) 
@@ -343,14 +343,14 @@
 
     * Rebatable Benefit for BENTO ;
     * Subsec 160AAA (1) of the ITAA 1936 ;
-    * Benefits included in CAPITA are: Widow Allowance, Youth Allowance, Austudy, Newstart Allowance, Sickness Allowance, Special Benefit, and Partner Allowance ;
+    * Benefits included in CAPITA are: Widow Allowance, Youth Allowance, Austudy, JobSeeker Payment, Sickness Allowance, Special Benefit, and Partner Allowance ;
     * Benefits not included in CAPITA are: Mature Age Allowance (post 30 June 1996), Disaster Recovery Allowance, and Community Development Employment Project ;
 
     RebBftA&psn = YaOtherAllBasicA&psn                /* Youth Allowance (job seekers) */
                 + YaStudAllBasicA&psn                 /* Youth Allowance (students and Australian Apprentices) */
                 %IF &psn IN( r , s ) %THEN %DO ;
                 + AustudyAllBasicA&psn                /* Austudy basic rate */
-                + NsaAllBasicA&psn                    /* Newstart Allowance basic rate */
+                + JspAllBasicA&psn                    /* JobSeeker Payment basic rate */
                 + SickAllNmA&psn                      /* Sickness Allowance on the SIH. The SIH amount is an estimate of
                                                          the basic amount, since the components are not separable on the
                                                          SIH. */
@@ -367,7 +367,9 @@
                 %END ; 
                 ;
 
-    RebBftF&psn = RebBftA&psn / 26 ;
+    RebBftA&psn = FLOOR( RebBftA&psn ) ;              /* Subsection 13(4) of the ITA(1936 Act) Regulation 2015 the rebatable benefit amount is rounded down to the nearest whole dollar */
+
+    RebBftF&psn = RebBftA&psn / 26 ;           
 
 %MEND RebBft ;
 

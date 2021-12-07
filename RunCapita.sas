@@ -13,19 +13,24 @@ OPTIONS NOFMTERR ;
 **********************************************************************************;
 
 * Include the DefineCapitaDirectory code to set the main CAPITA drive ;
-%INCLUDE "\\CAPITAlocation\Public\DefineCapitaDirectory.sas" ;
+%INCLUDE "\\CAPITALocation\DefineCapitaDirectory.sas" ;
 
 * Specify how to model the removal of the energy supplement; 
+* G = Choose to model the grandfathering of ES (default option); 
 * Y = Choose to give everyone the ES; 
 * N = Choose to give no-one the ES; 
-%LET RunEs = Y; 
+%LET RunEs = G; 
+
+* Specify whether to model HELP repayments ; 
+%LET RunHelp = N ; * Default is set to N;
 
 * Specify year and quarter of interest ;
-%LET Year = 2015 ;     * Format 20XX = 20XX-YY ;  
-%LET Quarter = Sep ;   * Valid quarters are Mar Jun Sep Dec ;
+%LET Year = 2022 ;     * Format 20XX = 20XX-YY ;  
+%LET Quarter = Mar ;   * Valid quarters are Mar Jun Sep Dec ;
+%LET QYear = %EVAL(&Year + 1) ; * DO NOT CHANGE. This is to ensure the correct parameters are imported for quarterly runs ;
 
 * Specify the time duration of analysis ;
-* A for Annual, the financial year. This options uses annualised parameters calculated using time weighted average of each quarter ;
+* A for Annual, the financial year. This option uses annualised parameters calculated using time weighted average of each quarter ;
 * Q for Quarter. This option uses actual parameter values from the appropriate quarter ;
 %LET Duration = A ;
 
@@ -36,8 +41,9 @@ OPTIONS NOFMTERR ;
     %IF &RunCameo = Y %THEN %DO ;
         %LET Year = &CameoYear ;
         %LET Quarter = &CameoQuarter ;
+		%LET Qyear = &CameoQyear ; 
         %LET Duration = &CameoDuration ;
-		%LET RunEs = &CameoRunEs; 
+        %LET RunHelp = &CameoRunHelp ; 
     %END ;
 
     /* Specify Year for Basefile run */
@@ -48,7 +54,8 @@ OPTIONS NOFMTERR ;
 
     /* Calculate relevant date flag, depending on Annual or Quarter run */
     %IF &Duration = A %THEN %LET DateFlag = "1Jul&year."d ;
-    %ELSE %IF &Duration = Q %THEN %LET DateFlag = "1&Quarter&Year."d ;
+    %ELSE %IF &Duration = Q AND &Quarter = Sep OR &Quarter = Dec %THEN %LET DateFlag = "1&Quarter&Year."d ;
+    %ELSE %IF &Duration = Q AND &Quarter = Mar OR &Quarter = Jun %THEN %LET DateFlag = "1&Quarter&QYear."d ; 
 %MEND DateFlagandEs ;
 %DateFlagandEs 
 
@@ -93,7 +100,7 @@ OPTIONS NOFMTERR ;
 
 * Specify location of master parameters data set. One for quarter and one for annual ;
 * Parameters should be generated first using RunParameters ;
-%LET ParmDrive = &CapitaDirectory.Parameter\ ;
+%LET ParmDrive = &CapitaDirectory.Parameter\  ;
 
 LIBNAME AllParmQ "&ParmDrive.Quarter" ;
 
@@ -107,7 +114,6 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 * Specify common directory for policy modules ;
 %LET PolicyDrive = &CapitaDirectory.Policy Modules\ ;
 
-
 * Specify name of policy modules ;
 %LET Initialisation   = &PolicyDrive.1 Initialisation.sas ;           * Module 1 - Initialisation ;
 %LET Income1          = &PolicyDrive.2 Income1.sas ;                  * Module 2 - Income 1 ;
@@ -119,7 +125,6 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 %LET Dependants2      = &PolicyDrive.8 Dependants2.sas ;              * Module 8 - Dependants 2 ;
 %LET FTB              = &PolicyDrive.9 FTB.sas ;                      * Module 9 - Family payments ;
 %LET Supplement       = &PolicyDrive.10 Supplements.sas ;             * Module 10 - Supplements ;
-%LET SaptoRebThres    = &PolicyDrive.SaptoRebThres.sas ;              * Additional code for Tax Module ;
 %LET Tax              = &PolicyDrive.11 Tax.sas ;                     * Module 11 - Taxation ;
 %LET Childcare        = &PolicyDrive.12 Childcare.sas ;               * Module 12 - Childcare ;
 %LET Finalisation     = &PolicyDrive.13 Finalisation.sas ;            * Module 13 - Finalisation ;
@@ -151,12 +156,12 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
 
         /* Read in quarterly parameters */
         %IF %UPCASE( &Duration ) = Q %THEN %DO ;
-            MERGE AllParmQ.AllParams_Q ; 
+            MERGE AllParmQ.AllParams_Q AllParmQ.ProbGrndfthr_Q; 
         %END ;
 
         /* Read in annualised parameters */
         %ELSE %IF %UPCASE( &Duration ) = A %THEN %DO ;
-            MERGE AllParmA.AllParams_A ; 
+            MERGE AllParmA.AllParams_A AllParmA.ProbGrndfthr_A; 
         %END ;
 
         /* Read in parameters from the chosen period */
@@ -190,27 +195,6 @@ LIBNAME AllParmA "&ParmDrive.Annual" ;
     %END ;
 %MEND CallChildcare ;
 
-* Include SAPTO function - additional code for module 11; 
-
-/*
-
-%MACRO DefineSaptoFunction ;
-
-%IF %SYMEXIST(SaptoFuncDefined) %THEN %DO ;
-	%LET SaptoFuncDefined = 1 ;
-%END ;
-
-%ELSE %DO ;
-	%INCLUDE "&SaptoRebThres" ;              
-	%GLOBAL SaptoFuncDefined ;
-%END ;
-
-%MEND DefineSaptoFunction ;
-
-%DefineSaptoFunction ; 
-
-*/
-
 * Run policy modules in a data step ;
 
 DATA &Outfile ;
@@ -227,7 +211,7 @@ DATA &Outfile ;
     SET &BasefileLib..&Basefile ;
 
     BY FamId ;
-
+    FORMAT _ALL_ ;
     * Include code for each policy modules ;
     %INCLUDE "&Initialisation" ;                
     %INCLUDE "&Income1" ;                       
@@ -264,10 +248,12 @@ OPTIONS NOMFILE NOMPRINT NOSOURCE2 ;
             IF _n_ = 1 THEN SET Param ;
 
             SET Basefile.&Basefile ;
+		
+            BY FamId ;   
+ 
+			FORMAT _ALL_ ;
 
-            BY FamId ;    
-
-            OPTIONS SOURCE2 ;
+			OPTIONS SOURCE2 ;
 
             %INCLUDE "&FileMacroFree" ;
 

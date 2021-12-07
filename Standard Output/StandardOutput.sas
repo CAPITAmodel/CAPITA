@@ -117,7 +117,7 @@
                       PpsTotA - IncPenTestF -
                       WifeTotA - IncPenTestF -
                       PppTotA - IncAllTestF -
-                      NsaTotA - IncAllTestF -
+                      JspTotA - IncAllTestF -
                       YaOtherTotA - IncAllTestF -
                       YaStudTotA - IncAllTestF -
                       YaTotA - IncAllTestF -
@@ -143,6 +143,8 @@
                     UsedTotTaxOffsetA - 
                     LitoA -
                     UsedLitoA -
+					LamitoA - 
+					UsedLamitoA - 
                     BentoA -
                     UsedBentoA -
                     NetIncTaxA -
@@ -151,7 +153,6 @@
                     FrankCrImpA -
                     UsedFrankCrA -
                     YaTotA -
-                    TempBudgRepLevA -
                     YaOtherTotA -
                     YaStudTotA -
                     IncAllTestF -
@@ -175,16 +176,13 @@
                     SenSupTotA -
                     CareSupA -
                     PartnerAllNmA -
-                    IncSupBonA -
                     SifsA -
                     FtbaA -
                     FtbbA -
-                    SkBonusA -
                     DstoA -
                     DictoA -
-                    MawtoA -
                     SaptoA -
-                    NsaTotA -
+                    JspTotA -
                     PppTotA -
                     SpbAllNmA -
                     UsedSaptoA -
@@ -452,13 +450,13 @@ RUN ;
     * Point to time stamped copy of standard output ;
     %IF &CompareType = Policy %THEN %DO ;   
         %LET InSoFile = &SOFolder.Capita SO template.xlsx ;
-        %LET standoutE = &SOFolder.&datenow &timenow Capita SO.xlsx ;
+        %LET standoutE = &SOFolder.&datenow &timenow &year Capita SO.xlsx ; /*EAH: added year to output*/
     %END ;
 
     %ELSE %IF &CompareType = Version %THEN %DO ;
         * Same template as Policy. Win/Loss table probably will not make sense when comparing basefiles ;
         %LET InSoFile = &SOFolder.Capita SO template.xlsx ; 
-        %LET standoutE = &SOFolder.&datenow &timenow Capita SO Version.xlsx ;
+        %LET standoutE = &SOFolder.&datenow &timenow &year Capita SO Version.xlsx ;
     %END ;
 
     * recfm=N allows copying of binary files ;

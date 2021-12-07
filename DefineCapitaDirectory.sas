@@ -1,4 +1,4 @@
-
+ 
 **************************************************************************************
 * Program:      DefineCapitaDirectory.sas                                            *
 * Description:  Specifies the directory at which CAPITA is stored. Note that the     *
@@ -10,4 +10,4 @@
 *               usually not be required to be run separately.                        *
 **************************************************************************************;
 
-%LET CapitaDirectory = \\CAPITAlocation\ ;
+%LET CapitaDirectory = \\CAPITALocation\ ; 

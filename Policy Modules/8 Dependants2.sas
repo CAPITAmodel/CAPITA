@@ -136,19 +136,19 @@
     * MEDICARE LEVY DEP;
     * Under MedLevDepAge1 ; 
     IF ( 0 < ActualAge&psn < MedLevDepAge1 ) 
-    AND AdjTaxIncA&psn < MedLevDepIncThr2 
+    AND AdjTaxIncA&psn < MedLevDepIncThr1 
     THEN DO ; 
     
-        IF AdjTaxIncA&psn < MedLevDepIncThr1 THEN DepsMlFlag&psn = 1 ;
+        IF AdjTaxIncA&psn < MedLevDepIncThr2 THEN DepsMlFlag&psn = 1 ;
 
-        ELSE IF AdjTaxIncA&psn >= MedLevDepIncThr1 THEN DepsMlFlag&psn = 2 ;
+        ELSE IF AdjTaxIncA&psn >= MedLevDepIncThr2 THEN DepsMlFlag&psn = 2 ;
 
     END ;
 
     * Above MedLevDepAge1 and under MedLevDepAge2 ; 
     IF MedLevDepAge1 <= ActualAge&psn < MedLevDepAge2          
        AND StudyType&psn IN ( 'SS' , 'FTNS' )
-       AND AdjTaxIncA&psn < MedLevDepIncThr2  
+       AND AdjTaxIncA&psn < MedLevDepIncThr1  
 
         THEN DepsMlFlag&psn = 1 ;
 

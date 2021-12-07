@@ -11,14 +11,14 @@
 *   Purpose: Coordinate childcare calculation                                      *
 ************************************************************************************;
 
-	*************************************************************************************
-	*  1. Define macros to run to calculate outcomes under the current childcare system *
-	                 (in place up to 1 July 2018)                                       *
+	**************************************************************************************
+	*  1. Define macros to run to calculate outcomes under the previous childcare system *
+	                 (in place up to 1 July 2018)                                        *
 	*************************************************************************************;
 
 	*************************************************************************************
-	*  2. Define macros to run to calculate outcomes under the proposed childcare system*
-	                    (to take effect on 1 July 2018)                                 *
+	*  2. Define macros to run to calculate outcomes under the current childcare system *
+	                    (took effect on 1 July 2018)                                    *
 	*************************************************************************************;
 
 	%MACRO RunChildcare ;
@@ -28,7 +28,7 @@
 	OR ( &Duration = Q AND &Year = 2018 AND ( ( &Quarter = Mar ) OR ( &Quarter = Jun ) ) )
 	%THEN %DO ; 
 
-	/*1. Define macros to run to calculate outcomes under the current childcare system (in place up to 1 July 2018)*/
+	/*1. Define macros to run to calculate outcomes under the previous childcare system (was in place up to 1 July 2018)*/
 
 	    %CcbElig            /*Calculate the maximum number of CCB eligible hours*/
 	    %CcbHrElig          /*Calculate the number of CCB-eligible kids in each kind of care and the number CCB eligible hours per child*/
@@ -37,27 +37,27 @@
 	    %CcbPct( Occ )      /*Calculate the Maximum weekly benefit, MultipleChild%, TaxableInc% and CCB% for approved care ('OCC')*/
 	    %CcbSchooling       /*Define schooling status and calculate Schooling %*/
 	    %CcbLdcPct          /*Calculate LDC Part-time %*/
-	    %CcbBenefit         /*Calculate CCB entitlement, actual childcare cost and out of pocket cost after CCB*/
+	    %CcbBenefit         /*Calculate CCB entitlement, actual childcare cost and out pocket cost after CCB*/
 	    %CcrRebate          /*Calculate CCR entitlement and out pocket cost after CCR*/
 
 	%END ;
 
 	%ELSE %DO ;
 
-	/*2. Define macros to run to calculate outcomes under the proposed childcare system (to take effect on 1 July 2018)*/
+	/*2. Define macros to run to calculate outcomes under the current childcare system (took effect on 1 July 2018)*/
 
 	    %CcsMaxHrElig       /*Calculate the maximum number of CCS eligible hours that can be claimed for each child*/
 	    %CcsHrElig          /*Calculate the number of CCS eligible hours per child*/
 	    %CcsHrFeeCap        /*Calculate the hourly fee cap applicable to the type of CCS care*/
 	    %CcsRate            /*Calculate the subsidy assistance rate*/
-	    %CcsSubsidy         /*Calculate CCS entitlement, actual childcare cost and out of pocket cost after CCS*/
+	    %CcsSubsidy         /*Calculate CCS entitlement, actual childcare cost and out pocket cost after CCS*/
 
 	%END ;
 
 %MEND RunChildcare ;
 
 **********************************************************************************************************
-* PART 1: Define macro to calculate outcomes under the Current Childcare System                          *
+* PART 1: Define macro to calculate outcomes under the Previous Childcare System                         *
 * (in place up to 1 July 2018)                                                                           *  
 **********************************************************************************************************;
 
@@ -381,8 +381,8 @@
 
 
 **********************************************************************************************************
-* PART 2: Define macro to calculate outcomes under the proposed childcare system                         *
-* (to take effect on 1 July 2018 by replacing CCB and CCR with a Child Care Subsidy (CCS)                *  
+* PART 2: Define macro to calculate outcomes under the current childcare system                          *
+* (took effect on 1 July 2018 by replacing CCB and CCR with a Child Care Subsidy (CCS)                   *  
 **********************************************************************************************************;
 
 %MACRO CcsActivTest( AboveThrs ) ;
@@ -562,27 +562,97 @@ END ;
 
         ELSE CcsRateA = 0;  
 
+    /* Determine the higher subsidy rate for additional children 5 and under i.e. 'higher rate children' using the base subsidy rate */
+
+		IF CcsRateA > 0 THEN CcsRate2A = MIN( 0.95, ( CcsRateA + 0.3 ) ) ; /* increased rate will be 30 per cent higher, up to a ceiling of 95 per cent */
+
+        ELSE CcsRate2A = 0 ; 
+
 %MEND CcsRate ;
+
+/* For families with mutlple children under 6, identify the 'primary child' */
+/* This macro uses an array to find the oldest child uner 6 i.e. the 'primary child' */
+
+%MACRO Maximum(VarList) ; 
+
+ARRAY List(*) &VarList ;
+
+PrimaryU6 = SUBSTR(VNAME(List[WHICHN(MAX( OF LIST[*]), OF LIST[*])]),10,1) ;
+
+%MEND Maximum ;
 
 /*Calculate CCS entitlement, actual childcare cost and out of pocket cost after CCS*/
 
 %MACRO CcsSubsidy ;
+
+	/* From 1 July 2022, families who are entitled to the CCS and with two or more children under 6 years of age */
+	/* will receive an increased subsidy for their second and subsequent children */
+	/* The oldest CCS eligible child aged under 6 years will be considered the 'primary child' and will not attract the higher subsidy. */
+    
+    * For families with multiple children under 6 only ; 
+
+    IF KidsU6u > 1 THEN DO ; 
+
+	    %DO j = 1 %TO 4 ; 
+
+		    KidsAgeU6&j = 0 ; 
+
+			IF AgeofKid&j > 5 THEN KidsAgeU6&j = "." ; /* Set any children aged over 5 as missing */
+
+			ELSE IF AgeofKid&j < 6 THEN KidsAgeU6&j = AgeofKid&j ; /* only set the age of those children under 6 */
+
+		%END ; 
+
+	    %Maximum( KidsAgeU61 KidsAgeU62 KidsAgeU63 KidsAgeU64 ) ; /* Identify the 'primary child' */
+
+	END ;
 
     %DO j = 1 %TO 4 ; 
 
     /*Determine weekly CCS entitlement per child*/ 
 
         IF CcsType&j IN ("LDC", "FDC", "OSHC") THEN DO ;
-        	
-			/*CCS amount per hour is rounded to the nearest 2 decimal places*/
+
+   			/*CCS amount per hour is rounded to the nearest 2 decimal places*/
             CcsAmtW&j =   CcsEligHrW&j *  ROUND( MIN (CcsHrFeeCap&j * CcsRateA , CcHrCost&j * CcsRateA), 0.01) ;
+
+			* Attribute higher rate to additional children 5 and under from 1 July 2022 ; 
+		    %IF ( &Duration = A AND &Year > 2021 ) %THEN %DO ; 
+
+				CcsAmt2W&j =   CcsEligHrW&j *  ROUND( MIN (CcsHrFeeCap&j * CcsRate2A , CcHrCost&j * CcsRate2A), 0.01) ;  
+
+				* Attribute the higher amount to higher rate children only ;
+				%DO k = 2 %TO 4 ;
+
+                   IF KidsU6u > 1 AND AgeofKid&j < 6 AND PrimaryU6 NE &k THEN CcsAmtW&k = CcsAmt2W&k ; 
+
+				%END ; 
+			 
+				* Create flag to indicate which rate is applied ;
+				LENGTH CcsRateApplied&j $ 18 ;
+
+				CcsRateApplied&j = "CcsRateA" ;
+
+				IF CcsAmtW&j = CcsAmt2W&j THEN CcsRateApplied&j = "CcsRate2A" ; 
+
+				ELSE IF CcsAmtW&j = 0 THEN CcsRateApplied&j = "NA" ;
+
+			%END ;
                                  
     /*Calculate annual CCS amount per child. If family's income is above the highest income threshold then the maximum subsidy cap will apply*/
 
-        IF CcTestInc >= CcsIncThrA5 THEN CcsAmtA&j = MIN ( CcsCappedSubsidyA , CcsAmtW&j * CcWPerYr&j ) ;
+            %IF ( &Duration = A AND &Year < 2022 ) %THEN %DO ; 
 
-        ELSE CcsAmtA&j = CcsAmtW&j * CcWPerYr&j ;
-                               
+	            IF CcTestInc >= CcsIncThrA5 THEN CcsAmtA&j = MIN ( CcsCappedSubsidyA , CcsAmtW&j * CcWPerYr&j ) ;
+
+	            ELSE CcsAmtA&j = CcsAmtW&j * CcWPerYr&j ;
+
+			%END ; 
+			%ELSE %DO ; /* Remove annual cap from 1 July 2022. DESE have indicated that this may be brought forward to 7 March 2022 */
+
+	            CcsAmtA&j = CcsAmtW&j * CcWPerYr&j ;
+
+			%END ; 
         END ;
 
         ELSE DO ;
@@ -591,7 +661,6 @@ END ;
             CcsAmtA&j = 0 ;
 
         END ;
-
     /*Calculate actual childcare costs and out of pocket costs after CCS per child, on both a weekly and annual basis*/
 
         IF CcHrW&j > 0 THEN DO ;
@@ -625,4 +694,6 @@ END ;
 /*Call %RunChildcare to run the relevant macros and output results*/
 
 %RunChildcare
+
+
 

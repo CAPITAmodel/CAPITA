@@ -20,9 +20,9 @@
 
 * Define income thresholds for 0.5, 1 and 2 dependents.  In CAPITA V3 the thresholds were based on the analysis of the ICareACP variable in the SIH;
 
-%let carerPmntThreshold1 = 46;
-%let carerPmntThreshold2 = 91;
-%let carerPmntThreshold3 = 153; 
+%let carerPmntThreshold1 = 47;
+%let carerPmntThreshold2 = 98;
+%let carerPmntThreshold3 = 176; 
 
     DATA Person&SurveyYear ;
 

@@ -174,46 +174,13 @@ OPTIONS MINOPERATOR ;
     PenThrF          = PenThr&sc.F ;
     PenTpr           = HarmerPenTpr ;
 
-*8Mar2017 part of Budget Savings Omnibus Bill 2016 but not yet legislated ;
-	%IF (&Duration = A AND &Year  >= 2017 
-	    OR &Duration = Q AND &Year > 2017 	
-	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
-	%THEN %DO ;
-		%IF &RunEs = Y %THEN %DO;
-
-			PenEsMaxFr = PenEsMax&sc.F ;
-
-				%IF &SC = C %THEN %DO; 
-
-					PenEsMaxFs = PenEsMax&sc.F ;
-
-				%END; 
-
-		%END; 
-
-
-
-	 %ELSE 	%IF &RunEs = N %THEN %DO;
-
-	 		PenEsMaxFr = 0;
-
-				%IF &SC = C %THEN %DO; 
-
-					PenEsMaxFs = 0;
-
-				%END; 
-
-		%END; 
-	%END ;
-
-	%ELSE %DO ;
+* 2018-19 MYEFO Reversal of unenacted cessation of Energy Supplement for new grants. ;
 
   		PenEsMaxFr = PenEsMax&sc.F ;
 
 		%IF &SC = C %THEN %DO; 
 			PenEsMaxFs = PenEsMax&sc.F ;
 		%END; 
-	%END ;
 
 %MEND PenParmAlloc ;
 
@@ -310,37 +277,19 @@ OPTIONS MINOPERATOR ;
 %MACRO PenReduction( OrdIncome, UseAssetTest ) ;
 
 	* Assign assets test thresholds ;
-	IF Coupleu = 0 THEN DO;
-		IF Occupancyu <= 2 THEN PenAssThr = PenAssThrHoS ;
-		ELSE PenAssThr = PenAssThrNhoS ;
+	IF Coupleu = 0 AND Occupancyu <= 2 THEN PenAssThr = PenAssThrHoS ;
+	ELSE IF Coupleu = 0 AND Occupancyu > 2 THEN PenAssThr = PenAssThrNhoS ;
+	ELSE IF Coupleu = 1 AND Occupancyu <= 2 THEN PenAssThr = PenAssThrHoC ;
+	ElSE IF Coupleu = 1 AND Occupancyu > 2 THEN PenAssThr = PenAssThrNhoC ;
+	
+	* Calculate assets in excess of the threshold, and apply rounding factor ;
+	AssetsExcess = AssetsPenTest - PenAssThr ;
+	AssetsExcess = FLOOR(AssetsExcess / PenAssRnding) * PenAssRnding ;
 
-		* Calculate the reduction due to assets (1064-G3) ;
-		AssetsExcess = AssetsPenTest - PenAssThr ;
-
-		* Note that we disregard any part of the excess that is not a multiple of the rounding factor (1064-G7) ;
-		AssetsExcess = FLOOR(AssetsExcess / PenAssRnding) * PenAssRnding ;
-
-  		* Calculate dollar amount pension is reduced by for each person under income and assets
-    	test. ;
-		PenRedIncTest = ( &OrdIncome - PenThrF ) * PenTpr ;
-		PenRedAssetTest = AssetsExcess * PenAssTpr ;
-	END;
-
-	IF Coupleu = 1 THEN DO;
-		IF Occupancyu <= 2 THEN PenAssThr = PenAssThrHoC ;
-		ElSE PenAssThr = PenAssThrNhoC ;
-		* Calculate the reduction due to assets (1064-G3) ;
-		AssetsExcess = AssetsPenTest - PenAssThr ;
-
-		* Note that we disregard any part of the excess that is not a multiple of the rounding factor (1064-G7) ;
-		AssetsExcess = FLOOR(AssetsExcess / PenAssRnding) * PenAssRnding ;
-
-  		* Calculate dollar amount pension is reduced by for each person under income and assets
-    	test. ;
-		PenRedIncTest = ( &OrdIncome - PenThrF ) * PenTpr ;
-		PenRedAssetTest = (AssetsExcess * PenAssTpr)/2 ;
-	END;
-
+  * Calculate dollar amount pension is reduced by for each person under income and assets
+    test. ;
+	PenRedIncTest = ( &OrdIncome - PenThrF ) * PenTpr ;
+	PenRedAssetTest = AssetsExcess * PenAssTpr ;
 
   * Apply assets test if specified in call (Y/N) ;
 	%IF &UseAssetTest = Y %THEN %DO ;
@@ -495,6 +444,11 @@ OPTIONS MINOPERATOR ;
                    + RAssF&Psn        
                    + PenSupMinF&Psn   
                    + PenEsF&Psn ;
+
+	* Apply Section 54 of the Social Security (Administration) Act 1999 ;
+	* Payments of less than $1.00 per fortnight are increased to $1.00 ;
+	
+	IF 0 < &Type.TotF&Psn < 1 THEN &Type.TotF&Psn = 1 ; 
 
     &Type.TotA&Psn = &Type.TotF&Psn * 26 ;
 

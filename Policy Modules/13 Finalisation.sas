@@ -128,9 +128,9 @@
                        + AustudyPharmAllF&psn       /* Austudy Pharmaceutical Allowance */
                        + AustudyAllEsF&psn          /* Austudy ES */
 
-                       + NsaRAssF&psn               /* Newstart Allowance Rent Assistance */
-                       + NsaPharmAllF&psn           /* Newstart Allowance Pharmaceutical Allowance */
-                       + NsaAllEsF&psn              /* Newstart Allowance ES */
+                       + JspRAssF&psn               /* JobSeeker Payment Rent Assistance */
+                       + JspPharmAllF&psn           /* JobSeeker Payment Pharmaceutical Allowance */
+                       + JspAllEsF&psn              /* JobSeeker Payment ES */
 
                        + PppRAssF&psn               /* Parenting Payment Partnered Rent Assistance */
                        + PppPharmAllF&psn           /* Parenting Payment Partnered Pharmaceutical Allowance */
@@ -170,14 +170,11 @@
                          /* Family Payment */
                        + FtbaF&psn                  /* Family Tax Benefit Part A */
                        + FtbbF&psn                  /* Family Tax Benefit Part B */
-                       + SKBonusF&psn               /* School Kid Bonus */
-                       + BabyBonusF&psn             /* Baby Bonus */
            
                          /* Supplements */
                        + CareAllF&psn               /* Carer Allowance */
                        + CareSupF&psn               /* Carer Supplment */
                        + PenEdSupF&psn              /* Pensioner Education Supplement */
-                       + IncSupBonF&psn             /* Income Support Bonus */
                        + SenSupF&psn                /* Senior Supplement */
                        + SenSupEsF&psn              /* Senior Supplement Energy Supplement */
                        + TelAllF&psn                /* Telephone Allowance */
@@ -263,6 +260,15 @@
 
     IncDispFu = IncDispAu / 26 ;
 
+	* Disposable income less Childcare costs (for use in EMTRs that include the impact of net childcare costs);
+	%IF &RunCameo = Y %THEN %DO ; 
+		
+		IncDispLessCcAu = IncDispAu - CcsCostAu ; 
+
+		IncDispLessCcFu = IncDispLessCcAu / 26 ; 
+
+    %END ; 
+
     * Transfer income ;
     IncTranFu = IncTranFr + IncTranFs + IncTranF1 + IncTranF2 + IncTranF3 + IncTranF4 ;   
 
@@ -292,9 +298,9 @@
 
     PppTotAu = PppTotFu * 26 ;
 
-    NsaTotFu = NsaTotFr + NsaTotFs ;
+    JspTotFu = JspTotFr + JspTotFs ;
 
-    NsaTotAu = NsaTotFu * 26 ;
+    JspTotAu = JspTotFu * 26 ;
 
     YaOtherTotFu = YaOtherTotFr + YaOtherTotFs ;
 
@@ -341,22 +347,22 @@
 
     PpsTotAu = PpsTotFu * 26 ;
 
-	* Additional variables required in PRISMOD.DIST ;
-	pensionu = sum(DspPenBasicFr, AgePenBasicFr, CarerPenBasicFr, ServiceRAssFr,DvaDisPenNmFr, ServicePenBasicFr, DvaWwPenNmFr,
-				   DspPenBasicFs, AgePenBasicFs, CarerPenBasicFs, ServiceRAssFs,DvaDisPenNmFs, ServicePenBasicFs, DvaWwPenNmFs,
-				   DspPenEsFr, DspPenEsFs, AgePenEsFr,  AgePenEsFs,  CarerPenEsFr,  CarerPenEsFs,ServicePenEsFr,ServicePenEsFs,
-				   DspPharmAllFr, DspRAssFr, AgePharmAllFr, AgeRAssFr,CarerPharmAllFr, CarerRAssFr,
- 				   DspPharmAllFs, DspRAssFs, AgePharmAllFs, AgeRAssFs,CarerPharmAllFs, CarerRAssFs,
-				   SifsFr, SifsFs) / 2 ; 
-	solepenu = sum(PpsPenBasicFr, SifsFr, PpsPharmAllFr, PpsRAssFr, PpsPenEsFr) / 2 ;  
- 	dssallwu = sum(IncTranFu/2, -pensionu, -solepenu) ;
-
-    if FtbaTestInc = 0 then FtbaTestInc = sum(AdjTaxIncAr, AdjTaxIncAs);
-
-    if IncSuperSWs = . then IncSuperSWs = 0;
-    if IncTaxSuperImpAs = . then IncTaxSuperImpAs = 0;
-
-    adjtaxip_with_tfsuper = sum(AdjTaxIncAr, AdjTaxIncAs, (IncSuperSWr * 52 - IncTaxSuperImpAr), (IncSuperSWs * 52 - IncTaxSuperImpAs));
+	* Additional variables required in PRISMOD.DIST ; /*EAH: remove summary variables used for PRISMOD.DIST*/
+/*	pensionu = sum(DspPenBasicFr, AgePenBasicFr, CarerPenBasicFr, ServiceRAssFr,DvaDisPenNmFr, ServicePenBasicFr, DvaWwPenNmFr,*/
+/*				   DspPenBasicFs, AgePenBasicFs, CarerPenBasicFs, ServiceRAssFs,DvaDisPenNmFs, ServicePenBasicFs, DvaWwPenNmFs,*/
+/*				   DspPenEsFr, DspPenEsFs, AgePenEsFr,  AgePenEsFs,  CarerPenEsFr,  CarerPenEsFs,ServicePenEsFr,ServicePenEsFs,*/
+/*				   DspPharmAllFr, DspRAssFr, AgePharmAllFr, AgeRAssFr,CarerPharmAllFr, CarerRAssFr,*/
+/* 				   DspPharmAllFs, DspRAssFs, AgePharmAllFs, AgeRAssFs,CarerPharmAllFs, CarerRAssFs,*/
+/*				   SifsFr, SifsFs) / 2 ; */
+/*	solepenu = sum(PpsPenBasicFr, SifsFr, PpsPharmAllFr, PpsRAssFr, PpsPenEsFr) / 2 ;  */
+/* 	dssallwu = sum(IncTranFu/2, -pensionu, -solepenu) ;*/
+/**/
+/*    if FtbaTestInc = 0 then FtbaTestInc = sum(AdjTaxIncAr, AdjTaxIncAs);*/
+/**/
+/*    if IncSuperSWs = . then IncSuperSWs = 0;*/
+/*    if IncTaxSuperImpAs = . then IncTaxSuperImpAs = 0;*/
+/**/
+/*    adjtaxip_with_tfsuper = sum(AdjTaxIncAr, AdjTaxIncAs, (IncSuperSWr * 52 - IncTaxSuperImpAr), (IncSuperSWs * 52 - IncTaxSuperImpAs));*/
 
     * DVA income ;
 
@@ -412,6 +418,11 @@
 
     UsedLitoFu = UsedLitoAu / 26 ;
 
+	* Amount of used LAMITO ;
+    UsedLamitoAu = UsedLamitoAr + UsedLamitoAs + UsedLamitoA1 + UsedLamitoA2 + UsedLamitoA3 + UsedLamitoA4 ;
+
+    UsedLamitoFu = UsedLamitoAu / 26 ;
+
     * Amount of used Item 20 tax offsets ;
     UsedItem20Au = UsedItem20Ar + UsedItem20As ;
 
@@ -442,10 +453,6 @@
 
     MedLevSurFu = MedLevSurAu / 26 ;
 
-    * Amount of Temporary Budget Repair Levy ;
-    TempBudgRepLevAu = TempBudgRepLevAr + TempBudgRepLevAs + TempBudgRepLevA1 + TempBudgRepLevA2 + TempBudgRepLevA3 + TempBudgRepLevA4 ;
-
-    TempBudgRepLevFu = TempBudgRepLevAu / 26 ;
 
 %MEND IncomeUnit ;
 

@@ -75,8 +75,7 @@ DATA Person&SurveyYear ;
 
 
 
-            * Hours worked per week from first and second job. (Convert categorical values into numeric values) ;
-			/*No longer required in 2015-16 SIH - numeric item */
+            * Hours worked per week from first and second job ;
 			HrsPerWkp = HrsPerWkSp;
 
             * Duration of Unemployment (for use in Allowances module) ;
@@ -152,9 +151,9 @@ DATA Person&SurveyYear ;
             shares or units in trusts as a proxy for deductions against dividend income ;
 
             NetShareLossAp = MAX ( 0 , DedIntSharesSWp - IncDivSWp ) * 52 ;
-
-            NetShareLossPAp = MAX ( 0 , DedIntSharesSPAp - IncDivSPAp ) ;
-
+			/**previous financial year income data will not be collected in SIH 2017-18**/
+            /* NetShareLossPAp = MAX ( 0 , DedIntSharesSPAp - IncDivSPAp ) ; */ /* Previous financial year net share losses */
+			NetShareLossPAp = NetShareLossAp;
             * Correction for wage and salary income including salary sacrificed amounts ;
 
             IF IncSSFlagSp = 1 THEN IncWageSWp = MAX ( 0 , IncEmpTotSWp - IncSSTotSWp - NonSSTotSWp ) ;
@@ -191,6 +190,8 @@ DATA Person&SurveyYear ;
             IncRentResSAp = IncRentResSWp * 52 ;     /* Residential property rental income - weekly to annually */
             IncRentNResSAp = IncRentNResSWp * 52 ;   /* Non-residential property rental income - weekly to annually */
             IncSuperSAp = IncSuperSWp * 52 ;         /* Income from superannuation/annuity - weekly to annually */
+            IncMaintSPAp = IncMaintSAp ;             /* Previous year Maintenance received - annual, proxied by current year data */
+            MaintPaidSPAp = MaintPaidSAp ;           /* Previous year Maintenance paid - annual, proxied by current year data */
 
             * Construction of additional variables required for income definitions module ;
 
@@ -233,22 +234,18 @@ DATA Person&SurveyYear ;
                 IncIntWp = IncIntAp / 52 ;
 
                 * Income from interest payments for previous year ;
+				/* Previous financial year income data was not collected in SIH 2017-18. Current year data has been used as a proxy*/
 
-                IncIntPAp = IncIntFinSPAp            /* Previous year income from financial institution account interest */
-                          + IncIntBondSPAp           /* Previous year income from interest on debentures and bonds */
-                          + IncIntLoanSPAp           /* Previous year income from interest on loans */
-                          + IncTrustSPAp             /* Previous year income as beneficiary of a trust */
-                          + IncPUTrustSPAp ;         /* Previous year income from public unit trusts */
+                IncIntPAp = IncIntAp ;
 
-                * Workers compensation - sum of components (previous year) ;
-
-                IncWCompPAp = IncAccSPAp             /* Previous year income from accident compensation and sickness insurance */
-                            + IncWCompSPAp ;         /* Previous year income from regular workers compensation */
-
-                * Workers compensation - sum of components (current year) ;
+				* Workers compensation - sum of components (current year) ;
 
                 IncWCompAp = IncAccSAp               /* Income from accident compensation and sickness insurance */
                            + IncWCompSAp ;           /* Income from regular workers compensation */
+
+				* Workers compensation - sum of components (previous year) ;
+
+                IncWComPAp = IncWCompAp ;
 
                 * Total property rent (note this is net of expenses) ;
 
@@ -257,22 +254,23 @@ DATA Person&SurveyYear ;
 
                 IncNetRentWp = IncNetRentAp / 52 ;
 
-                IncNetRentPAp = IncRentResSPAp       /* Residential property */
-                                + IncRentNResSPAp ;  /* Non-residential property */
+                 * Total property rent (note this is net of expenses) ;
+
+				IncNetRentPAp = IncNetRentAP ;
 
                 * Net loss from renting (0 if net rent is positive, negative of loss if net rent is negative) ;
 
-                NetRentLossAp = MAX( 0 , -IncNetRentAp ) ; 
+                NetRentLossAp = MAX( 0 , -IncNetRentAp ) ;
 
-                NetRentLossPAp = MAX( 0 , -IncNetRentPAp ) ; 
+              	NetRentLossPAp = NetRentLossAp ; /* Previous year net rent losses proxied by current year net rent losses */
 
                 * Net investment losses (sum of rental losses and share losses) ;
 
                 NetInvLossAp = NetRentLossAp + NetShareLossAp ;
 
-                NetInvLossPAp = NetRentLossPAp + NetShareLossPAp ;
+                NetInvLossPAp = NetInvLossAp; /* Previous year net investment losses proxied by current year net investment losses */
 
-                * Deductible child maintanence for ATI purposes (use maintanance paid as proxy) ; 
+				* Deductible child maintanence for ATI purposes (use maintanance paid as proxy) ; 
 
                 DedChildMaintAp = MaintPaidSAp ;       
 
@@ -287,10 +285,11 @@ DATA Person&SurveyYear ;
                 ELSE PPLFlagSp = 0 ;
               
         * Create variable indicating whether the previous year income data is available for this person ;
+				/* Previous year income is not available in the SIH 2017-18 */
+                /*IF FinScopeSp = 2 THEN DataScopeTypep = "PrevYrAvail" ;
 
-                IF FinScopeSp = 2 THEN DataScopeTypep = "PrevYrAvail" ;
-
-                ELSE DataScopeTypep = "PrevYrNA" ;
+                ELSE DataScopeTypep = "PrevYrNA" ;*/ 
+				DataScopeTypep = "PrevYrNA";
 
 		* Wealth variables - aggregation ;
 
@@ -314,19 +313,36 @@ DATA Person&SurveyYear ;
 
 				AssTotp = AssPropBusp + AssDeemedp + AssTrustCompp + AssOtherp ;
 
+				* Total person-level HELP and SFSS debt. Add SFSS to HELP as a proxy for actual SFSS repayments, which will be slightly higher. ;
+
+				HelpDebtp = HelpAcDebtp + SFSSAcDebtp ;
+
+
 RUN ;
 
 * Calculate proportions of person-level assets within households.
   Do this using PROC SQL - for each household, add up person-level assets and then for each person, divide their assets by this total.
+  The calculations are only conducted on nonNPD households to ensure the NPD imputed records are not included in the household in calculating asset proportions.
   This will help with estimating the allocation of household-level SIH assets between people in each household. ;
 
 PROC SQL ;
-	CREATE TABLE Person&SurveyYear (DROP=AssHHTotp) AS 
+	CREATE TABLE HHPctAssets&SurveyYear (KEEP=SihHID SihFID SihIUID SihPIDp HHPctAssetsp) AS 
 			SELECT *, sum(AssTotp) AS AssHHTotp, AssTotp/calculated AssHHTotp AS HHPctAssetsp
-			FROM Person&SurveyYear
-			GROUP BY SihHID ;
+            FROM Person&SurveyYear
+			WHERE NPDFLAG = 0
+			GROUP BY SihHID  
+			ORDER BY SihHID, SihFID, SihIUID, SihPIDp ;  
 QUIT ;
 
+PROC SORT DATA=Person&SurveyYear;
+BY SihHID SihFID SihIUID SihPIDp NPDFLAG ;
+RUN ; 
+
+DATA Person&SurveyYear ; 
+MERGE Person&SurveyYear HHPctAssets&SurveyYear ; 
+BY SihHID SihFID SihIUID SihPIDp ; 
+RUN ;
+ 
 **************************************************************************************************
 *   Step 2 - Create additional variables that use the income unit level dataset and are required *
 *             for the policy and basefile modules                                                *
@@ -511,11 +527,11 @@ DATA Person&SurveyYear ;
 
 	AssPropBusp = AssPropBusp + AssPropBusHHh * HHPctAssetsp ;
 
-	AssDeemedp = AssDeemedp + AssDeemedHHh * HHPctAssetsp ;
+/*	AssDeemedp = AssDeemedp + AssDeemedHHh * HHPctAssetsp ;*/ /*Deemed assets should not take out loan*/
 	
 	AssOtherp = AssOtherp + AssOtherHHh * HHPctAssetsp ;
 
-	AssTotp = AssPropBusp + AssDeemedp + AssTrustCompp + AssOtherp ;
+	AssTotp = AssPropBusp + AssDeemedp + AssDeemedHHh * HHPctAssetsp + AssTrustCompp + AssOtherp ; /*Total assets should take out loan*/
 
 RUN ;
 

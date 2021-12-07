@@ -31,11 +31,11 @@ DATA Basefile&SurveyYear ;
         IF ActualAge3 NE . THEN PersID3 = ( IUID * 10 ) + INPUT ( SihPID3 , 2. ) ;  
         IF ActualAge4 NE . THEN PersID4 = ( IUID * 10 ) + INPUT ( SihPID4 , 2. ) ;     
 
-    * Age of the youngest dependant in the income unit (AgeYoungDepu) ;
+    * Age of the youngest dependent in the income unit (AgeYoungDepu) ;
 
         i = 0 ;
 
-        AgeYoungDepu = 99 ;        /* Initialise to 99. If no dependants, this will remain at 99. */
+        AgeYoungDepu = 99 ;        /* Initialise to 99. If no dependents, this will remain at 99. */
 
         ARRAY KidAges{15}     Kids0Su Kids1Su Kids2Su Kids3Su Kids4Su Kids5Su Kids6Su Kids7Su Kids8Su Kids9Su Kids10Su Kids11Su
                               Kids12Su Kids13Su Kids14Su ;
@@ -69,7 +69,7 @@ DATA Basefile&SurveyYear ;
                   + Kids10Su + Kids11Su + Kids12Su + Kids13Su + Kids14Su + (ActualAge1 = 15) + (ActualAge2 = 15) 
                   + (ActualAge3 = 15) + (ActualAge4 = 15) ;
 
-        * Total dependants in the income unit (i.e. including all kids and all dependents) ;
+        * Total dependents in the income unit (i.e. including all kids and all dependents) ;
 
         TotalKidsu = Kids0to15u + (ActualAge1 > 15) + (ActualAge2 > 15) + (ActualAge3 > 15) + (ActualAge4 > 15) ;
 
@@ -113,7 +113,7 @@ DATA Basefile&SurveyYear ;
 RUN ; 
 
 
-* Age of the youngest dependant in the family (AgeYoungDepf) ;
+* Age of the youngest dependent in the family (AgeYoungDepf) ;
 
     * First sort by FamID as the look-ahead method used below requires this ;
 

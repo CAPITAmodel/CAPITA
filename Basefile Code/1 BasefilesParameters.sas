@@ -14,8 +14,6 @@
                         TaxRate3 -
                         TaxRate4 -
                         MedLevRate -
-                        TBRLRate -
-                        TBRLRateFBT -
                         AdjFBThr -
                         Drawdown5564 -
                         Drawdown6574 -
@@ -25,8 +23,8 @@
                         Drawdown9094 -
                         DrawdownGt95 -
                         IncSourceSplitAdjFactor -
-                        PropTfCompGov -
-                        PropTfCompPriv -                      
+                        PropTfCompGov - 
+                        PropTfCompPriv -                  
                         ;
 
 

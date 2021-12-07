@@ -144,11 +144,24 @@
     AND YearOfArrival&psn <= 1          /* Resident for at least 10 years*/
     AND DvaType&psn = ''                /* Not receiving a DVA Entitlement   */
     AND PenType&psn = ''                /* Not receiving another DSS Pension */  
-	AND WidAllSW&psn IN	(0, .)			/* Not receiving Widow Allowance on the SIH */  
+
+	/* 2017-18 Budget - Working Age Payment Reforms - allow AP-age Widow Allowance recipients to receive AP after 1 January 2022, disallow before 1 January 2022 */ 
+	/* 2017-18 Budget - Working Age Payment Reforms - Before Partner Allowance ceases on 1 January 2022, if an individual receives Partner Allowance, they should not receive Age Pension as well */
+	%IF (&Duration = A AND &Year < 2022)
+		OR (&Duration = Q AND &Year < 2021)
+		OR (&Duration = Q AND &Year = 2021 AND (&Quarter = Sep or &Quarter = Dec))
+	%THEN %DO ;
+
+		AND WidAllSW&psn IN	(0, .)			/* Not receiving Widow Allowance on the SIH */ 	
+		AND PartAllSW&Psn IN (0, .)
+
+	%END ;
+
 	AND DspSW&psn IN	(0, .)			/* Not receiving DSP on the SIH */  
 	AND CarerPaySW&psn IN	(0, .)		/* Not receiving Carer Payment on the SIH */  
 
         THEN PenType&psn = 'AGE' ;
+
 
     * Determine if person is eligible for the Disability Support Pension (DSP);
 
@@ -175,8 +188,8 @@
 
 		/* 2017-18 Budget - Working Age Payment Reforms - transition Wife Pensioners receiving Carer Allowance onto Carer Payment on 20 March 2020 */ 
 		%IF (&Duration = A AND &Year >= 2020) 
-		    OR (&Duration = Q AND &Year > 2020) 	
-		    OR (&Duration = Q AND &Year = 2020 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
+		    OR (&Duration = Q AND &Year >= 2020) 	
+		    OR (&Duration = Q AND &Year = 2019 AND (&Quarter = Jun) ) 
 		%THEN %DO ;
 
 			OR 	(WifePenSW&psn > 0 
@@ -215,8 +228,8 @@
 		/* 2017-18 Budget - Working Age Payment Reforms - Wife Pension will cease on Mar 2020 */
 
 	%IF (&Duration = A AND &Year < 2020) 
-	    OR (&Duration = Q AND &Year < 2020) 	
-	    OR (&Duration = Q AND &Year = 2020 AND (&Quarter = Mar) ) 
+	    OR (&Duration = Q AND &Year < 2019) 	
+	    OR (&Duration = Q AND &Year = 2019 AND (&Quarter = Sep OR &Quarter = Dec OR &Quarter = Mar) ) 
 	%THEN %DO ;
 
 		    IF  WifePenSW&psn     > 0            /* Receiving Wife Pension on the SIH         */
@@ -303,49 +316,16 @@
     RAssMinRentFu     = RAssMinRent&sc.F ;
     RAssMaxFu         = RAssMax&sc.F ;
 
-	/*Assign Energy Supplement based on grandfathering test*/
+	
+*MYEFO 2018-19 reversal of policy to remove Energy Supplement for new grants. ;
 
-	%IF (&Duration = A AND &Year  >= 2017 
-	    OR &Duration = Q AND &Year > 2017 	
-	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
-	%THEN %DO ;
+	PenEsMaxFr = DSPU21PenEsMax&sc.F;
 
+		%IF &SC = C %THEN %DO; 
 
-	 	%IF &RunEs = Y %THEN %DO; 
-
-			PenEsMaxFr = DSPU21PenEsMax&sc.F;
-
-				%IF &SC = C %THEN %DO; 
-
-					PenEsMaxFs = DSPU21PenEsMax&sc.F;
-
-				%END; 
+			PenEsMaxFs = DSPU21PenEsMax&sc.F;
 
 		%END; 
-
-		%ELSE %IF &RunEs = N %THEN %DO; 
-
-			PenEsMaxFr = 0;
-
-				%IF &SC = C %THEN %DO; 
-
-					PenEsMaxFs = 0;
-
-				%END; 
-
-		%END; 
-	%END ;
-
-	%ELSE %DO ;
-
-  		PenEsMaxFr = DSPU21PenEsMax&sc.F;
-
-			%IF &SC = C %THEN %DO; 
-
-				PenEsMaxFs = DSPU21PenEsMax&sc.F;
-
-			%END; 
-	%END ;
 
 	/*End*/
 
@@ -363,35 +343,16 @@
 
     PenBasicMaxF    = PPSPenBasicMaxF ;
     PenSupBasicMaxF = PPSSupBasicMaxF ;
-    PharmAllMaxF    = PharmAllMaxSF ;                          /* Hardcoded to take single person values */
+    PharmAllMaxF    = PharmAllMaxSF ;               /* Hardcoded to take single person values */
     PenThrF         = PPSPenThrF + DepsSSTotal * PPSThrChild ; /*  Note threshold in parameter  */
                                                                /*  spreadsheet does not include */
                                                                /*  addition for first child     */
     PenTpr          = PPSPenTpr ;
 
-	/*Assign Energy Supplement based on grandfathering test*/
-	%IF (&Duration = A AND &Year  >= 2017 
-	    OR &Duration = Q AND &Year > 2017 	
-	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
-	%THEN %DO ;
-
-		%IF &RunEs = Y %THEN %DO; 
-
-			PenEsMaxFr = PPSPenEsMaxF ; 
-
-		%END; 
-
-		%ELSE %IF &RunEs = N %THEN %DO; 
-
-			PenEsMaxFr = 0 ; 
-
-		%END; 
-
-	%END ;
-	%ELSE %DO ;
-		PenEsMaxFr = PPSPenEsMaxF ; 
-	%END ;
-
+	*MYEFO 2018-19 reversal of policy to remove Energy Supplement for new grants. ; 
+	
+	PenEsMaxFr = PPSPenEsMaxF ; 
+	
 	/*End*/
 
 %MEND PPSParmAlloc ;
@@ -576,6 +537,11 @@
                   RAssF&psn        + 
                   PharmAllF&psn    +
                   PenEsF&psn      ;
+
+	* Apply Section 54 of the Social Security (Administration) Act 1999 ;
+	* Payments of less than $1.00 per fortnight are increased to $1.00 ;
+	
+	IF 0 < PenTotF&Psn < 1 THEN PenTotF&Psn = 1 ; 
 
     PenTotA&psn = PenTotF&psn * 26 ;
 

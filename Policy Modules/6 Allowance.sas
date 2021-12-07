@@ -164,9 +164,9 @@ OPTIONS MINOPERATOR ;
 
     END ;
 
-    ELSE IF AllowTyper = 'NSA' THEN DO ;
+    ELSE IF AllowTyper = 'JSP' THEN DO ;
 
-        %AllowCalc( Nsa , r )
+        %AllowCalc( Jsp , r )
 
     END ;
 
@@ -201,10 +201,10 @@ OPTIONS MINOPERATOR ;
 
     END ;
 
-	* Newstart Allowance will be known as JobSeeker Payment after 20 March 2020; 
-    ELSE IF AllowTypes = 'NSA' THEN DO ;
+	* JobSeeker Payment was known as NewStart Allowance before 20 March 2020; 
+    ELSE IF AllowTypes = 'JSP' THEN DO ;
 
-        %AllowCalc( Nsa , s )
+        %AllowCalc( Jsp , s )
 
     END ;
 
@@ -269,8 +269,8 @@ END ;
 	* 2017-18 Budget - Working Age Payment Reforms - Sickness Allowance recipients will transition to Newstart Allowance/JobSeeker Payment on March 2020;
 
 %IF (&Duration = A AND &Year < 2020) 
-    OR (&Duration = Q AND &Year < 2020) 	
-    OR (&Duration = Q AND &Year = 2020 AND (&Quarter = Mar) ) 
+    OR (&Duration = Q AND &Year < 2019) 	
+    OR (&Duration = Q AND &Year = 2019 AND (&Quarter = Sep OR &Quarter = Dec OR &Quarter = Mar) ) 
 %THEN %DO ;
 
     IF SickAllSW&psn > 0 THEN DO ;
@@ -291,7 +291,9 @@ END ;
 	* 2017-18 Budget - Working Age Payment Reforms - Partner Allowance will cease on 1 January 2022;
 
 %IF (&Duration= A AND &Year < 2022) 
-	OR (&Duration = Q AND &Year < 2022) 
+	OR (&Duration = Q AND &Year < 2021) 
+	OR ((&Duration = Q AND &Year = 2021) AND (&Quarter = Sep OR &Quarter = Dec))
+
 %THEN %DO ;
 
     IF PartAllSW&Psn > 0 THEN DO ;
@@ -382,22 +384,22 @@ END ;
             AllowSubType&psn = 'COUP' ;
 	    END ;
         ELSE DO ;
-            AllowType&psn = 'NSA' ;
+            AllowType&psn = 'JSP' ;
             AllowSubType&psn = 'COUP' ;
 	    END ;
           
     END ;
 
-    * Determine if person is eligible for the Newstart Allowance (or JobSeeker Payment after March 2020 - see 2017-18 Budget Working Age Payment Reforms);
-    ELSE IF (( NsaSW&psn  > 0 OR ParPaySW&psn > 0 )    /* Receiving Newstart Allowance or Parenting Payment on SIH (accounts for transitions between NSA and PPP) */   
-        OR YouthAllSW&psn > 0                          /* Receiving Youth Allowance on the SIH. To allow transferrability between NSA and YA(Oth) */
+    * Determine if person is eligible for the JobSeeker Payment (or Newstart Allowance before March 2020 - see 2017-18 Budget Working Age Payment Reforms);
+    ELSE IF (( NsaSW&psn  > 0 OR ParPaySW&psn > 0 )    /* Receiving Newstart Allowance or Parenting Payment on SIH (accounts for transitions between NSA/JSP and PPP) */   
+        OR YouthAllSW&psn > 0                          /* Receiving Youth Allowance on the SIH. To allow transferrability between JSP and YA(Oth) */
         OR PpGrandfatherFlag&psn = 1                   /* Sole parents who are not eligible for PPS                                               */
-		OR (WidAllSW&psn > 0 AND ActualAge&psn < WidAllMinAge)	/*Receiving Widow Allowance on the SIH but below minimum age*/				   	
+		OR (WidAllSW&psn > 0 /*AND ActualAge&psn < WidAllMinAge*/)	/*Receiving Widow Allowance on the SIH but below minimum age*/				   	
 
 		/*2017-18 Budget - Working Age Payment Reforms - transition Wife Pensioners (not already transitioned onto Carer Payment) and Sickness Allowance recipients onto Newstart Allowance/JobSeeker Payment after March 2020*/	
 				%IF (&Duration = A AND &Year >= 2020) 
-				    OR (&Duration = Q AND &Year > 2020) 	
-				    OR (&Duration = Q AND &Year = 2020 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
+				    OR (&Duration = Q AND &Year > 2019) 	
+				    OR (&Duration = Q AND &Year = 2019 AND (&Quarter = Jun )) 
 				%THEN %DO ;
 
 						OR WifePenSW&psn > 0  			/*Receiving Wife Pension on the SIH after March 2020 */	
@@ -416,9 +418,9 @@ END ;
         AND AllowType&psn   = ''                       /* Not yet assigned a DSS allowance                                                        */ 
     THEN DO ;
 
-        AllowType&psn = 'NSA' ;
+        AllowType&psn = 'JSP' ;
 
-        %NsaWidType( &psn )
+        %JspWidType( &psn )
 
     END ;
 
@@ -426,7 +428,9 @@ END ;
 	* 2017-18 Budget - Working Age Payment Reforms - Widow Allowance will cease on 1 January 2022*; 
 
 %IF (&Duration= A AND &Year < 2022) 
-	OR (&Duration = Q AND &Year < 2022) 
+	OR (&Duration = Q AND &Year < 2021) 
+	OR ((&Duration = Q AND &Year = 2021) AND (&Quarter = Sep OR &Quarter = Dec))
+
 %THEN %DO ;
 
     ELSE IF WidAllSW&psn       > 0              /* Receiving Widow Allowance on SIH  */   
@@ -435,12 +439,12 @@ END ;
         AND ActualAge&psn     >= WidAllMinAge   /* Person is above minimum age       */
         AND DvaType&psn        = ''             /* Not receiving DVA Entitlement     */
 		AND PenType&psn		   = '' 			/* Not receiving DSS Pension         */
-        AND AllowType&psn      = ''             /* Not receiving other DSS allowance */ 
+        /*AND AllowType&psn      = ''*/             /* Not receiving other DSS allowance */ 
     THEN DO ;
 
 		AllowType&psn = 'WIDOW' ;
 
-        %NsaWidType( &psn )
+        %JspWidType( &psn )
 
     END ;
 
@@ -488,7 +492,7 @@ END ;
     ELSE IF ( YouthAllSW&psn > 0            /* Receiving Youth Allowance on SIH */
 
         %IF &psn IN ( r , s ) %THEN %DO ;
-           OR NsaSW&psn  > 0                /* Receiving NSA on the SIH. To allow transferrability with NSA */
+           OR NsaSW&psn  > 0                /* Receiving NSA on the SIH. To allow transferrability with NSA(JSP) */
         %END ;
 
         %IF &sihcondition = NoReceiptSih %THEN %DO ; 
@@ -589,14 +593,14 @@ END ;
 
 %MEND YaAusType ;
 
-**********************************************************************************
-*   Macro:   NsaWidType                                                          *
-*   Purpose: Assigns type of Nsa/Widow payment received based on partner status, *
-*            parent status, age and whether or not the person is a long-term     *
-*            social security payment recipient.                                  *
-*********************************************************************************;;
+**************************************************************************************
+*   Macro:   JspWidType                                                              *
+*   Purpose: Assigns type of Nsa/Jsp/Widow payment received based on partner status, *
+*            parent status, age and whether or not the person is a long-term         *
+*            social security payment recipient.                                      *
+**************************************************************************************;;
 
-%MACRO NsaWidType( psn ) ;
+%MACRO JspWidType( psn ) ;
 
     IF Coupleu = 0 THEN DO ; * Start single ;
 
@@ -628,7 +632,7 @@ END ;
   * Couple ; 
     ELSE IF Coupleu = 1 THEN AllowSubType&psn = 'COUP' ;  
 
-%MEND NsaWidType ;
+%MEND JspWidType ;
 
 **********************************************************************************
 *   Macro:   AllowParameters                                                     *
@@ -643,8 +647,8 @@ END ;
 
     END ; * End those receiving Parenting Payment Partnered ;
 
-  * Start those receiving Newstart Allowance (JobSeeker Payment after March 2020) ;
-    ELSE IF AllowType&psn = 'NSA' THEN DO ; 
+  * Start those receiving JobSeeker Payment (Newstart Allowance before March 2020) ;
+    ELSE IF AllowType&psn = 'JSP' THEN DO ; 
 
         IF AllowSubType&psn = 'SINGNODEPS' THEN DO ;
 
@@ -670,7 +674,7 @@ END ;
 
         END ; 
 
-    END ; * End those receiving Newstart Allowance (JobSeeker Payment after March 2020) ; 
+    END ; * End those receiving JobSeeker Payment (Newstart Allowance after March 2020) ; 
 
   * Start those receiving non full-time student Youth Allowance ;
     ELSE IF AllowType&psn = 'YAOTHER' THEN DO ;
@@ -825,40 +829,20 @@ END ;
 
   * Allowance recipients only receive Pharmaceutical Allowance if they are   
     temporarily incapacitated, have a partial capacity to work, are a single 
-    principle carer (only NSA and YA Other) or are 60 years old or more and 
+    principle carer (only JSP and YA Other) or are 60 years old or more and 
     have been in receipt of an income support payment for at least 9 months. 
     CAPITA only models the last 2 categories. ;
     IF AllowSubType&psn = 'OLDLTR' 
     %IF &psn IN ( r , s ) %THEN %DO ;
-        OR ( AllowType&psn IN ( 'NSA' , 'YAOTHER' ) 
+        OR ( AllowType&psn IN ( 'JSP' , 'YAOTHER' ) 
         AND SingPrinCareFlag = 1 )
     %END ;   
         THEN PharmAllMaxF&psn = PharmAllMax&sc.F ;
 
-	/*Assign Energy Supplement based on grandfathering test*/
-	%IF (&Duration = A AND &Year  >= 2017 
-	    OR &Duration = Q AND &Year > 2017 	
-	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
-	%THEN %DO ;
-
-	 %IF &RunEs = Y %THEN %DO; 
-
-			AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ; 
-
-		%END; 
-
-		%ELSE %IF &RunEs = N %THEN %DO; 
-
-			AllEsMaxF&psn = 0; 
-
-		%END; 
-	%END ;
-	%ELSE %DO ;
-
-		AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ; 
-
-	%END ;
-
+	*MYEFO 2018-19 reversal of policy to remove Energy Supplement for new grants. ; 
+	
+	AllEsMaxF&psn = &alltype.&AllowSubType.EsMaxF ; 
+	
 	/*End*/
 
     AllThr1F&psn         = &alltype.Thr1F ;
@@ -870,7 +854,7 @@ END ;
   * Single principal carers who receive an Allowance which is determined by
     Benefit Rate Calculator B get a 40 per cent taper rate.
     SSA 1991 s1068-G17. ;
-    IF AllowType&psn IN ( 'NSA' , 'WIDOW' ) 
+    IF AllowType&psn IN ( 'JSP' , 'WIDOW' ) 
     AND SingPrinCareFlag = 1 
     THEN DO ;
 
@@ -1094,6 +1078,7 @@ END ;
 
 %MACRO PartIncTestThresh( psn ) ;
 
+		*MYEFO 2018-19 reversal of policy to remove Energy Supplement for new grants. ; 
 		/*Remove notional amount of Energy Supplement from partner income test 
 		threshold if person is not receiving it. This is part of the policy to 
 		remove(grandfather)the Energy Supplement for income support 
@@ -1101,36 +1086,21 @@ END ;
 
 		/*Assign flag for receipt of ES and use the flag in the calculation 
 		of income thresholds below*/		
-
-		%IF (&Duration = A AND &Year  >= 2017 
-	    OR &Duration = Q AND &Year > 2017 	
-	    OR(&Duration = Q AND &Year = 2017 AND &Quarter = Dec ) )
-		%THEN %DO ;
-
-			IF AllEsMaxF&psn > 0 THEN DO; 
-
-				AllEsFlag&psn = 1;
-
-			END; 
-
-			ELSE DO; 
-
-				AllEsFlag&psn = 0; 
-
-			END; 
-
-		%END; 
-
-		%ELSE %DO;  
-			
-			AllEsFlag&psn = 1;
-
-		%END;
 	
+		IF AllEsMaxF&psn > 0 THEN DO; 
+
+			AllEsFlag&psn = 1;
+		END;
+		ELSE DO;
+			
+			AllEsFlag&psn = 0;
+
+		END;
+		
 		/*End of assigning ES flags*/
 
 		* Where the partner receives an Allowance ;
-	    IF AllowType&psn IN ( 'PPP' 'NSA' 'YASTUD' 'YAOTHER' 'AUSTUDY' 'WIDOW' ) THEN 
+	    IF AllowType&psn IN ( 'PPP' 'JSP' 'YASTUD' 'YAOTHER' 'AUSTUDY' 'WIDOW' ) THEN 
 
 		/* The Partner income test includes all payment components */
         AllPartThrF&psn = ( AllBasicMaxF&psn + RAssMaxPossF&psn + (AllEsMaxF&psn * AllEsFlag&psn)
@@ -1184,7 +1154,7 @@ END ;
            OR ( Sex&psn = 'M' AND ActualAge&psn >= MaleAgePenAge ) ) 
     THEN DO ;                
 
-      * Use the basic couple Newstart Allowance rate (JobSeeker Payment after March 2020) and the full Pension 
+      * Use the basic couple JobSeeker Payment rate (Newstart Allowance before March 2020) and the full Pension 
         Supplement. ;
         AllPartThrF&psn = ( ( UnempCoupBasicMaxF + (UnempCoupEsMaxF * AllEsFlag&psn) + PenSupBasicMaxcF 
                             + PenSupRemMaxcF + PenSupMinMaxcF ) 
@@ -1275,7 +1245,7 @@ END ;
 
     ELSE DO ;
 
-      * Remove AllowType flag if person does not qualify for a positive amount ;
+  * Remove AllowType flag if person does not qualify for a positive amount ;
         AllowType&psn = '' ;
         AllowSubType&psn = '' ;
 
@@ -1286,6 +1256,14 @@ END ;
                 + RAssF&psn        
                 + PharmAllF&psn    
                 + AllEsF&psn ; 
+
+  * Apply Section 54 of the Social Security (Administration) Act 1999 ;
+  * Payments of less than $1.00 per fortnight are increased to $1.00 ;
+  * As Energy Supplement is the last payment reduced, assign the $1.00 per fortnight to ES ;
+	IF 0 < AllTotF&Psn < 1 THEN DO ; 
+		AllTotF&Psn = 1 ;
+		AllEsF&psn = 1 ;
+	END ;
 
     AllTotA&psn = AllTotF&psn * 26 ;
 
@@ -1369,9 +1347,8 @@ END ;
                 SET &BasefileLib..&Basefile ( KEEP = YouthAllSWr ActualAger StudyTyper 
                                                 Famposr WrkForceIndepr YaRandr 
 												%IF &RunCameo = Y %THEN %DO; %END; %ELSE %DO; 
-												RandAustudyEsGfthr RandNsaEsGfthr RandPppEsGfthr
-                								RandWidowEsGfthr RandYastudyEsGfthr RandYaotherEsGfthr
-												%END; 
+												RandCSHCEsGfthr RandFTBAEsGfthr RandFTBBEsGfthr
+                								%END; 
 	
 										RENAME = ( YouthAllSWr = YouthAllSWr_
                                                     ActualAger = ActualAger_ 
@@ -1380,12 +1357,9 @@ END ;
                                                     WrkForceIndepr = WrkForceIndepr_ 
                                                     YaRandr = YaRandr_ 
 													%IF &RunCameo = Y %THEN %DO;%END; %ELSE %DO;  
-													RandAustudyEsGfthr = RandAustudyEsGfthr_
-													RandNsaEsGfthr = RandNsaEsGfthr_
-													RandPppEsGfthr = RandPppEsGfthr_
-													RandWidowEsGfthr = RandWidowEsGfthr_
-													RandYastudyEsGfthr = RandYastudyEsGfthr_
-													RandYaotherEsGfthr = RandYaotherEsGfthr_
+													RandCSHCEsGfthr = RandCSHCEsGfthr_
+													RandFTBAEsGfthr = RandFTBAEsGfthr_
+													RandFTBBEsGfthr = RandFTBBEsGfthr_
 													%END; )) 
                 POINT = Pointer ;
 

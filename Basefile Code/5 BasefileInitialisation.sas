@@ -26,11 +26,9 @@
 * Define person level numeric variables that need to be initialised ;
 
 %LET PersonNumList = 
-
         ActualAgep -
         AdjFbAp - 
         AdjFbFp - 
-        AdjFbPAp -
 		AssDeemedp -
 		AssOtherp -
 		AssPropBusp -
@@ -39,13 +37,11 @@
         DedChildMaintAp -  
         DeductionAp -
         DeductionFp - 
-        DeductionPAp -
         DeductionWrkAp -
         FrankCrImpAp -
         FrankCrImpFp -
-        FrankCrImpPAp -
         FrankCrImpWp -
-        HrsPerWkp -
+        HrsPerWkp - 
         IncAccSAp - 
         IncBusAp - 
         IncBusLExpFp - 
@@ -56,12 +52,10 @@
         IncIntBondSAp - 
         IncIntFinSAp - 
         IncIntLoanSAp - 
-        IncIntPAp - 
         IncIntWp - 
         IncMaintSAp - 
         IncMaintSFp - 
         IncNetRentAp - 
-        IncNetRentPAp -
         IncNetRentWp - 
         IncNonHHSAp - 
         IncNonTaxSuperImpAp -
@@ -85,7 +79,6 @@
         IncTaxCompGovtSupImpAp -      
         IncTaxCompPrivSupImpAp -     
         IncTaxSuperImpAp -
-        IncTaxSuperImpPAp -
         IncTfCompPrivSupImpAp -
         IncTfCompGovtSupImpAp -
         IncTrustSAp - 
@@ -93,15 +86,11 @@
         IncWageSFp - 
         IncWageSWp -
         IncWCompAp -
-        IncWCompPAp -
         IncWCompSAp -
         MaintPaidSAp - 
         NetRentLossAp - 
-        NetRentLossPAp - 
         NetInvLossAp - 
-        NetInvLossPAp - 
         NetShareLossAp -
-        NetShareLossPAp -
         NonSSTotSAp -
         NonSSTotSFp - 
         NumCareDepsp -
@@ -113,24 +102,12 @@
         RandTaxDedImpp -  
         RandYearArrImpp -      
         RandWorkforceIndepImpp -
-		RandAbstudyEsGfthp -
-		RandAgeEsGfthp -
-		RandAustudyEsGfthp -
-		RandCarerEsGfthp -
-		RandDspEsGfthp -
-		RandNsaEsGfthp -
-		RandPppEsGfthp -
-		RandPpsEsGfthp -
-		RandWidowEsGfthp -
-		RandWifeEsGfthp -
-		RandYastudyEsGfthp -
-		RandYaotherEsGfthp -
 		RandFtbaEsGfthp -
 		RandFtbbEsGfthp -
+		RandCSHCEsGfthp - 
         RepEmpSupContAp -
         RepFbAp - 
         RepSupContAp - 
-        RepSupContPAp - 
         TotSSNonSSFBWp - 
         TotSSNonSSAp -
         TotSSNonSSFp -
@@ -138,7 +115,7 @@
         WrkForceIndepp -
         YaRandp -    
         YearOfArrivalp -
-
+		HelpDebtAp -
     ; 
 
 **************************************************************************************

@@ -50,7 +50,7 @@
 %MEND DistImpute ;
 
 
-* Perform the imputation and append the new variables onto the 2011 person level dataset ;
+* Perform the imputation and append the new variables onto the 2017 person level dataset ;
 
 DATA Person&SurveyYear ;
 
@@ -59,8 +59,8 @@ DATA Person&SurveyYear ;
         * Define an array containing the probabilities in the cumulative density function - for males 85 years
           and over ;
 
-        ARRAY ProbArrayM85{16} (  0.1823, 0.3417, 0.4806, 0.5977, 0.6961,  0.7746, 0.8371, 0.8848, 0.9222,
-									0.9489, 0.9679,	0.9788, 0.9863, 0.9911, 0.9947, 1 	) ;
+        ARRAY ProbArrayM85{16} (  0.1678, 0.3219, 0.4598, 0.5750, 0.6743,  0.7549, 0.8216, 0.8723, 0.9113,
+									0.9397, 0.9610,	0.9757, 0.9856, 0.9912, 0.9952, 1 	) ;
 
         * Define an array containing the outcomes to assign to the imputed variable based on the 
           sampling outcome - for males 85 years and over ;
@@ -71,8 +71,8 @@ DATA Person&SurveyYear ;
         * Define an array containing the probabilities in the cumulative density funtion - for females 85 years
           and over ;
 
-        ARRAY ProbArrayF85{16} ( 0.147, 0.281, 0.405, 0.516, 0.614, 0.699, 0.771, 0.829, 0.877, 0.915, 
-									0.942, 0.960, 0.972, 0.982, 0.989, 1 ) ;
+        ARRAY ProbArrayF85{16} ( 0.1365, 0.2685, 0.3901, 0.4974, 0.5943, 0.6795, 0.7533, 0.8147, 0.8646, 0.9043, 
+									0.9352, 0.9585, 0.9741, 0.9833, 0.9904, 1 ) ;
 
         * Define an array containing the outcomes to assign to the imputed variable based on the 
           sampling outcome - for females 85 years and over ;

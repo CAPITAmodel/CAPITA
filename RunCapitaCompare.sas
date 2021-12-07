@@ -16,11 +16,13 @@ OPTIONS MINOPERATOR ;
 ***********************************************************************************;
 
 * Include the DefineCapitaDirectory code to set the main CAPITA drive ;
-%INCLUDE "\\CAPITAlocation\DefineCapitaDirectory.sas" ;
+%INCLUDE "\\CAPITALocation\DefineCapitaDirectory.sas" ;
 
 * Specify year and quarter of interest ;
-%LET Year = 2015 ;      * Format 20XX = 20XX-YY ;       
-%LET Quarter = Sep ;    * Valid quarters are Mar Jun Sep Dec ;
+%LET Year = 2022 ;      * Format 20XX = 20XX-YY ;       
+%LET Quarter = Mar ;    * Valid quarters are Mar Jun Sep Dec ;
+%LET QYear = %EVAL(&Year + 1) ; * DO NOT CHANGE. This is to ensure the correct parameters are imported for quarterly runs ;
+%LET SurveyYear = 2017 ; * DO NOT CHANGE. This is to ensure basefile parameters are dropped for surveyyear ;
 
 * Specify the time duration of analsis ;
 * A for Annual, the financial year. This options uses annualised parameters calculated using time weighted average of each quarter ;
@@ -31,7 +33,10 @@ OPTIONS MINOPERATOR ;
 * G = Choose to model the grandfathering of ES (default option); 
 * Y = Choose to give everyone the ES; 
 * N = Choose to give no-one the ES; 
-%LET RunEs = Y; 
+%LET RunEs = G ; 
+
+* Specify whether to model HELP repayments ; 
+%LET RunHelp = N ; * Default is set to N; 
 
 * Specify whether to run StandardOutput.sas ;
 * Standard Output produces tables summarising differences between base and sim runs
@@ -40,7 +45,7 @@ OPTIONS MINOPERATOR ;
 * Y to produce StandardOutput ;
 
 %LET RunStandardOutput = Y ;
-%LET SOFolder = &CapitaDirectory.Standard Output\ ;
+%LET SOFolder = &CapitaDirectory.Standard Output\;
 
 * Specify whether the results are to be output to Excel or just basic sas output ;
 * Y for linked Excel workbook ;
@@ -54,13 +59,15 @@ OPTIONS MINOPERATOR ;
     %IF &RunCameo = Y %THEN %DO ;
         %LET Year = &CameoYear ;
         %LET Quarter = &CameoQuarter ;
+        %LET QYear = &CameoQYear ;
         %LET Duration = &CameoDuration ;
-        %LET RunEs = &CameoRunEs ; 
+        %LET RunHelp = &CameoRunHelp ; 
     %END ;
 
     /* Calculate relevant date flag, depending on Annual or Quarter run */
     %IF &Duration = A %THEN %LET DateFlag = "1Jul&year."d ;
-    %ELSE %IF &Duration = Q %THEN %LET DateFlag = "1&Quarter&Year."d ;
+    %ELSE %IF &Duration = Q AND &Quarter = Sep OR &Quarter = Dec %THEN %LET DateFlag = "1&Quarter&Year."d ;
+    %ELSE %IF &Duration = Q AND &Quarter = Mar OR &Quarter = Jun %THEN %LET DateFlag = "1&Quarter&QYear."d ; 
 %MEND DateFlagandEs ;
 %DateFlagandEs
 
@@ -76,7 +83,7 @@ OPTIONS MINOPERATOR ;
 
 * Set Basefile directory. Sets the correct basefile used eg CAPITA basefile or Cameo basefile ;
 %MACRO BasefileDir ;
-    /* Specify nane of Basefile for Cameo run */
+    /* Specify name of Basefile for Cameo run */
     %IF &RunCameo = Y %THEN %DO ;
         %LET Basefile = Capita_InputFile ;
         %LET Work = %SYSFUNC( GETOPTION( Work ) ) ;
@@ -86,10 +93,8 @@ OPTIONS MINOPERATOR ;
     /* Specify name of Basefile for standard run */
     %ELSE %DO ;
         %LET Basefile = Basefile&Year ;
-        LIBNAME Basefile "&CapitaDirectory.Basefiles" ;
-        %IF &CompareType = Version %THEN %DO ;
-            LIBNAME Simfile "&CapitaDirectory.Basefiles" ; 
-        %END ;
+		LIBNAME Basefile "&CapitaDirectory.Basefiles" ;
+		LIBNAME Simfile "&CapitaDirectory.Basefiles Sim" ; /*specify the sim world basefile directory*/
     %END ;
 %MEND BasefileDir ;
 
@@ -108,7 +113,7 @@ LIBNAME ParmAB "&ParmBaseDrive.Annual" ;
 
 * Specify location of master parameters data set. One for quarter and one for annual ;
 * Parameters should be generated first in a separate process ;
-%LET ParmSimDrive = &CapitaDirectory.Parameter\;
+%LET ParmSimDrive = &CapitaDirectory.Parameter (Sim)\ ; /* Simulation parameter is saved in different folder */
 LIBNAME ParmQS "&ParmSimDrive.Quarter" ;
 LIBNAME ParmAS "&ParmSimDrive.Annual" ;
 
@@ -126,10 +131,7 @@ LIBNAME ParmAS "&ParmSimDrive.Annual" ;
 
 * Specify common directory for BASE and SIMULATED policy worlds ;
 %LET PolicyBase = &CapitaDirectory.Policy Modules\ ;
-%LET PolicySim  = &CapitaDirectory.Policy Modules\ ;
-
-* Additional code for Module 11 ;
-%LET SaptoRebThres         = &PolicyBase.SaptoRebThres.sas ;            
+%LET PolicySim  = &CapitaDirectory.Policy Modules (Sim)\ ;
 
 * Specify name of base world policy modules ;
 %LET Initialisation_Base   = &PolicyBase.1 Initialisation.sas ;           * Module 1 - Initialisation ;
@@ -175,10 +177,12 @@ LIBNAME ParmAS "&ParmSimDrive.Annual" ;
         /* Read in quarterly parameters */
         %IF %UPCASE( &Duration ) = Q %THEN %DO ;
             SET Parm&Duration&BaseOrSim..AllParams_Q ;
+			SET Parm&Duration&BaseOrSim..ProbGrndfthr_Q ;
         %END ;
 
         /* Read in annualised parameters */
         %ELSE %IF %UPCASE( &Duration ) = A %THEN %DO ;
+			SET Parm&Duration&BaseOrSim..ProbGrndfthr_A ;
             SET Parm&Duration&BaseOrSim..AllParams_A ;
         %END ;
 
@@ -197,28 +201,12 @@ LIBNAME ParmAS "&ParmSimDrive.Annual" ;
 %Param( &Duration , B )
 %Param( &Duration , S )
 
+
 ***********************************************************************************
 *      6.        Run policy modules                                               *
 *                                                                                 *
 **********************************************************************************;
 
-* Include SAPTO function - additional code for module 11; 
-
-%MACRO DefineSaptoFunction ;
-
-%IF %SYMEXIST(SaptoFuncDefined) %THEN %DO ;
-	%LET SaptoFuncDefined = 1 ;
-%END ;
-
-%ELSE %DO ;
-	%INCLUDE "&SaptoRebThres" ;              
-	%GLOBAL SaptoFuncDefined ;
-%END ;
-
-%MEND DefineSaptoFunction ;
-
-%DefineSaptoFunction ;       
- 
 * Run policy modules in a data step ;
 %MACRO Outfile( BasefileLib , OutfileName , PolicySfx , ParmSfx ) ;
  
@@ -233,7 +221,15 @@ LIBNAME ParmAS "&ParmSimDrive.Annual" ;
         * Read in basefile ;
         %IF &RunCameo = Y %THEN %LET Basefile = Capita_InputFile ;
 
-        SET &BasefileLib..&Basefile ;
+		%IF &Year = &SurveyYear %THEN %DO ; 
+        SET &BasefileLib..&Basefile (DROP= TaxRate1 TaxRate2 TaxRate3 TaxRate4 MedLevRate) ;
+		%END ;
+
+		%ELSE %DO ; 
+		SET &BasefileLib..&Basefile ;
+		%END ;
+
+		FORMAT _ALL_ ;
 
         BY FamId ;
 
@@ -320,7 +316,7 @@ LIBNAME ParmAS "&ParmSimDrive.Annual" ;
     /* Run 'Policy' comparison */
     %IF &CompareType = Policy %THEN %DO ;
         %Outfile( Basefile , CAPITA_Outfile_Base , _Base , B )
-        %Outfile( Basefile , CAPITA_Outfile_Sim , _Sim , S )
+        %Outfile( Basefile , CAPITA_Outfile_Sim , _Sim , S ) 
         %RenameVar( CAPITA_Outfile_Base , _Base )
         %RenameVar( CAPITA_Outfile_Sim , _Sim )
         %Merge( CAPITA_Outfile_Base , CAPITA_Outfile_Sim )

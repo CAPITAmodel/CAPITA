@@ -122,7 +122,7 @@
         %END ;
         
        * If the family is spread over multiple rows in the basefile, need to tally up
-         any dependants that are described in later rows ;
+         any dependants that are described on later rows ;
         IF NumIUu > 1 THEN DO ;
 
           * Record current position in the basefile ;
@@ -150,38 +150,7 @@
                 %OrdIncome( r_ )
 
               * Count how many FTB dependants in their own income units the family has ;
-                IF &Year < 2014 THEN DO ;   /* Old FTB child definition tests income */
-                                            /* of non-student children */
-
-                    IF ActualAger_ = 15 
-                    /* can't be FTB dep if receiving pension or allowance */
-                    AND ( YouthAllSWr_ + AustudySWr_ + DspSWr_ + NsaSWr_ ) <= 0      
-                    /* Assume ATI=private income as have already checked no allowance/pension */
-                    AND IncOrdFr_ < FtbaChldIncLim    
-                    THEN DO ;
-
-                        DepsFtbaOwnIU = DepsFtbaOwnIU + 1 ;   
-
-                        DepsFtbbOwnIU = DepsFtbbOwnIU + 1 ;  
-
-                    END ;
-
-                    IF ActualAger_ in ( 16 , 17 )
-                    AND HighestSYearSr_ = 1     /* has completed year 12 or equivalent*/
-                    /* can't be FTB dep if receiving pension or allowance */
-                    AND ( YouthAllSWr_ + AustudySWr_ + DspSWr_ + NsaSWr_ ) <= 0       
-                    /* Assume ATI=private income as have already checked no allowance/pension*/
-                    AND IncOrdFr_ < FtbaChldIncLim                                                
-                    THEN DO ;
-
-                        DepsFtbaOwnIU = DepsFtbaOwnIU + 1 ;
-
-                    END ;
-
-                END ;  
-
-              * FTB dep rules from May 2014 onwards - only 15 year olds in own income unit ;
-                ELSE IF ActualAger_ = 15 
+                IF ActualAger_ = 15 
                 /*can't be FTB dep if receiving pension or allowance*/
                 AND ( YouthAllSWr_ + AustudySWr_ + DspSWr_ + NsaSWr_ ) <= 0   
                 THEN DO ;
@@ -314,28 +283,14 @@
                  + DepsFtbSec19 ;   
       
 
-        %IF ( ( &Duration = A AND &Year < 2016 ) OR ( &Duration = Q AND &Year < 2016 )
-			OR ( &Duration = Q AND &Year = 2016 AND ( ( &Quarter = Mar ) OR ( &Quarter = Jun ) ) ) ) %THEN %DO ;
 
-            DepsFtbB = DepsUnder13 
-                     + Deps13_15u 
-                     + DepsFtbbOwnIU 
-                     + DepsFtbSec16_18 ;
-
-        %END ;
-
-        /* Change in child age for FTBB eligibility, also depending on family type from 1 July 2016*/  
-		/* Legislated 11 Dec 2015 - see Social Services Legislation Amendment (Family Payments Structural Reform and Participation Measures)Bill 2015*/
-
-		%ELSE %DO ;
-            IF Coupleu = 0 OR ActualAges >= 60 THEN DO ;      /*single parent or grandparent*/
-	                DepsFtbB = DepsUnder13 
-		                     + Deps13_15u 
-		                     + DepsFtbbOwnIU 
-		                     + DepsFtbSec16_18 ;
-			END ;
-		    ELSE DepsFtbB = DepsUnder13 ;
-        %END ;
+        IF Coupleu = 0 OR ActualAges >= 60 THEN DO ;      /*single parent or grandparent*/
+                DepsFtbB = DepsUnder13 
+	                     + Deps13_15u 
+	                     + DepsFtbbOwnIU 
+	                     + DepsFtbSec16_18 ;
+		END ;
+	    ELSE DepsFtbB = DepsUnder13 ;
 	
         IF IncMaintAu > 0 THEN DO ; 
         *6 July 2015, From 1 January 2017, maintenance income test will apply 

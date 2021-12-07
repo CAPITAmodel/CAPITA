@@ -4,7 +4,7 @@
 * Description:  Create additional variables which are required for basefiles and     *
 *               policy modules, and which require parameters and/or variables from   *
 *               across the policy year basefiles. Also, adjust the ages of           *
-*               individuals aged 65 in the survey year up to 66, to ensure they      *
+*               individuals aged 65 in the survey year up to 67, to ensure they      *
 *               still receive the Age Pension                                        * 
 **************************************************************************************;
 
@@ -40,10 +40,10 @@
 
             %END ;
 
-        /* Adjust the ages of individuals aged 65 in the survey year up to 66, to ensure they 
-           continue to receive the age pension in 2017-18 and 2018-19 */
+        /* Adjust the ages of individuals aged 65 in the survey year up to 67, to ensure they 
+           continue to receive the age pension in 2019-20 to 2022-23 */
 
-        %IF &BasefileYear > 2016 %THEN %DO ;
+        %IF &BasefileYear > 2018 %THEN %DO ;
 
             IF ActualAger = 65 THEN ActualAger = 67 ;
             IF ActualAges = 65 THEN ActualAges = 67 ;
@@ -69,50 +69,13 @@
 
 %MACRO SuperVariables(psn) ;
 
-    * Calculate amount of private and government superannuation benefit, before applying drawdown for 
-      calculating taxable and non-taxable superannuation benefits in uprating module ;
-
-    * First calculate fund types ;
-
-        IF IncSuperSA&psn > 0 THEN DO ;
-
-            * Where person only has non-Government superannuation ;
-            IF GovSuperAcBal&psn = 0 
-            AND PrivSuperAcBal&psn > 0 
-                THEN FundType&psn = 'PRIV' ; 
-
-            * Where person only has Government superannuation ;
-            ELSE IF GovSuperAcBal&psn > 0 
-            AND PrivSuperAcBal&psn = 0 
-                THEN FundType&psn = 'GOVT' ; 
-
-            * Where person has a mix of both Government and non-Government superannuation ;
-            ELSE IF GovSuperAcBal&psn > 0 
-            AND PrivSuperAcBal&psn > 0 
-                THEN FundType&psn = 'MIXED' ; 
-
-            * Where person has zero account balance, the fund type is imputed using the proportions of those
-              people who have account balances ;
-            ELSE IF GovSuperAcBal&psn = 0 
-            AND PrivSuperAcBal&psn = 0 
-            THEN FundType&psn = 'GOVT' ;
-
-        END ;
-
-    * Calculate the proportion of super income from Government or Private funds ;
-    * For people with Mixed funds, assume the proportion of income is equal to the proportion of their assets in that fund ;
+    * Assume the proportion of income is equal to the proportion of their assets in that fund ;
 
     IF IncSuperSA&psn > 0 THEN DO ;
 
-        * Assign proportions of income from Government or Private funds ;
-        IF FundType&psn = 'GOVT' THEN PropPrivImp&psn = 0 ;
-        ELSE IF FundType&psn = 'PRIV' THEN PropPrivImp&psn = 1 ;
-        ELSE IF FundType&psn = 'MIXED' 
-            THEN PropPrivImp&psn = PrivSuperAcBal&psn / ( PrivSuperAcBal&psn + GovSuperAcBal&psn ) * IncSourceSplitAdjFactor ;
-
-        * Calculate amount of income from Government or Private funds ;
-        IncSupPrivImpA&psn = PropPrivImp&psn * IncSuperSA&psn ;
-        IncSupGovtImpA&psn = ( 1 - PropPrivImp&psn ) * IncSuperSA&psn ;
+        * Calculate amount of income from super fund. All super funds are taken to be private funds ;
+        IncSupPrivImpA&psn = IncSuperSA&psn ;
+        IncSupGovtImpA&psn = 0 ;
 
     END ; 
 
@@ -121,16 +84,16 @@
             IF IncSupPrivImpA&psn > 0 THEN DO ;
 
                 * The actual drawdown amount is increased to the statutory drawdown rate if the actual drawdown amount is less than the minimum drawdown amount required ;
-                IF ActualAge&psn <= 64 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown5564 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
-                ELSE IF ActualAge&psn <= 74 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown6574 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
-                ELSE IF ActualAge&psn <= 79 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown7579 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
-                ELSE IF ActualAge&psn <= 84 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown8084 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
-                ELSE IF ActualAge&psn <= 89 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown8589 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
-                ELSE IF ActualAge&psn <= 94 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown9094 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
-                ELSE IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , DrawdownGt95 * ( IncSupPrivImpA&psn + PrivSuperAcBal&psn ) ) ;
+                IF ActualAge&psn <= 64 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown5564 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
+                ELSE IF ActualAge&psn <= 74 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown6574 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
+                ELSE IF ActualAge&psn <= 79 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown7579 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
+                ELSE IF ActualAge&psn <= 84 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown8084 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
+                ELSE IF ActualAge&psn <= 89 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown8589 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
+                ELSE IF ActualAge&psn <= 94 THEN IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , Drawdown9094 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
+                ELSE IncSupPrivImpA&psn = MAX( IncSupPrivImpA&psn , DrawdownGt95 * ( IncSupPrivImpA&psn + SuperAcBal&psn ) ) ;
 
                 * Recalculate total super income taking into account any increase in Private superannuation benefits due to minimum drawdown requirements ;
-                IncSuperImpA&psn = IncSupPrivImpA&psn + IncSupGovtImpA&psn ; 
+                IncSuperImpA&psn = IncSupPrivImpA&psn ; 
 
             END ;
 
@@ -148,9 +111,9 @@
             IF ActualAge&psn < 60 THEN DO ;
 
                 * Taxable component is assessable income ;
-                IncTaxSuperImpA&psn = IncTaxCompGovtSupImpA&psn + IncTaxCompPrivSupImpA&psn ;   
+                IncTaxSuperImpA&psn = IncTaxCompPrivSupImpA&psn ;   
                 * Taxfree component is NANE income ;
-                IncNonTaxSuperImpA&psn = IncTfCompGovtSupImpA&psn + IncTfCompPrivSupImpA&psn ;
+                IncNonTaxSuperImpA&psn = IncTfCompPrivSupImpA&psn ;
 
             END ;
 
@@ -159,10 +122,9 @@
             ELSE IF ActualAge&psn >= 60 THEN DO ;
 
                 * Taxable component taxed element is assessable income ;
-                IncTaxSuperImpA&psn = IncTaxCompGovtSupImpA&psn ;    
+                IncTaxSuperImpA&psn = 0 ;    
                 * Taxfree component of Government and Private fund benefits and taxable component of Private fund benefits are NANE income ;
-                IncNonTaxSuperImpA&psn = IncTfCompGovtSupImpA&psn       
-                                       + IncTaxCompPrivSupImpA&psn 
+                IncNonTaxSuperImpA&psn = IncTaxCompPrivSupImpA&psn 
                                        + IncTfCompPrivSupImpA&psn ;     
 
             END ;
@@ -193,7 +155,7 @@
 
     * Reportable fringe benefits (i.e. grossed up adjusted amount ;
 
-    RepFbA&psn = AdjFbA&psn / ( 1 - TaxRate{ NumTaxBrkt } - MedLevRate - TBRLRateFBT ) ;
+    RepFbA&psn = AdjFbA&psn / ( 1 - TaxRate{ NumTaxBrkt } - MedLevRate ) ;
 
     * Previous year adjusted fringe benefit amount proxied by current year amount ;
 

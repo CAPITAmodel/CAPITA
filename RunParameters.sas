@@ -1,5 +1,6 @@
 
 **************************************************************************************
+*              PROTECTED: CABINET IN CONFIDENCE                                      *
 * Program:      RunParameters.sas                                                    *
 * Description:  Generates the master parameter data set for all policies and all     *
 *               periods. The parameters are read in from the Common Parameter        *
@@ -12,13 +13,13 @@
 **********************************************************************************;
 
 * Include the DefineCapitaDirectory code to set the main CAPITA drive ;
-%INCLUDE "\\CAPITAlocation\Public\DefineCapitaDirectory.sas" ;
+%INCLUDE "\\CAPITALocation\DefineCapitaDirectory.sas" ;
 
 * Specify the location of Excel workbook containing the parameters ;
-%LET ParamWkBk = \\CAPITAlocation\CPS v18-10-15.xlsb ;
+%LET ParamWkBk = \\CAPITALocation\Public version CPS - Budget 2021-22.xlsb ;
 
 * Specify common drive location ;
-%LET AllParmDrive = &CapitaDirectory.Parameter\ ;
+%LET AllParmDrive = &CAPITADirectory.Parameter\ ;
 
 * Specify the location of parameters data sets are to be saved to ;
 LIBNAME AllParmQ "&AllParmDrive.Quarter" ;
@@ -40,8 +41,7 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
                   PenEdSup 
                   SSDepIncLimit 
                   TelephoneUtility 
-                  SeniorSup 
-                  IncomeSupportBonus 
+                  SeniorSup  
                   Childcare
                   SIFS 
                   TaxSchedule 
@@ -50,8 +50,6 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
                   RebatesOffsets
                   FTBA 
                   FTBB 
-                  BabyBonus 
-                  SchoolKidsBonus 
                   SuperBenefits ;
 
 * Specify list of work sheets to be read in (annualised parameters) ;
@@ -69,7 +67,6 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
                   SSDepIncLimit_A 
                   TelephoneUtility_A 
                   SeniorSup_A 
-                  IncomeSupportBonus_A 
                   Childcare_A
                   SIFS_A 
                   TaxSchedule 
@@ -78,14 +75,12 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
 				  HELP
 			  	  FTBA_A 
                   FTBB_A 
-                  BabyBonus_A 
-                  SchoolKidsBonus_A 
                   SuperBenefits ;
 
 * Specify start date from which point parameters are generated ;
 * NOTE: Need to start from survey year ;
 * Only parameters up to the end of the forward estimates period are generated ;
-%LET ParamStartDate = '1JUL2013'd ;
+%LET ParamStartDate = '1JUL2017'd ;
 
 ***********************************************************************************
 *      2.         Import parameters from Excel workbook                           *
@@ -109,11 +104,11 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
         * Big enough to cover all cases - SAS does not actually use all this if there is no data ;
         PROC IMPORT 
             OUT = AllParm&Period..&SheetName
-            ( WHERE = ( &ParamStartDate <= Date < INTNX( 'YEAR.7' , DATE() , 6 ) ) )       /* Read in the forward estimate period */
+            ( WHERE = ( &ParamStartDate <= Date < INTNX( 'YEAR.7' , DATE() , 5 ) ) )       /* Read in the forward estimate period */
             DATAFILE = "&ParamWkBk"        
             DBMS = EXCELCS REPLACE ;
             SHEET = "&SheetName" ;
-            RANGE = "A7:CC99" ;     
+            RANGE = "A7:CC107" ;     
         RUN;
 
         * Build the combined parameters dataset ;
@@ -151,7 +146,15 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
     DATA AllParm&Period..AllParams_&Period ;
 
         SET AllParm&Period..AllParams_&Period ;
+
+	
+		/*	Place future parameter toggles here, above the DROP statement	*/
+
         DROP not_used: F1-F99 ;
+
+		
+
+
 
         * Create array of all numeric variables ;
         ARRAY NumVars{ * } _NUMERIC_ ;
@@ -175,3 +178,19 @@ LIBNAME AllParmA "&AllParmDrive.Annual" ;
 * Generate annualised parameters data sets ;
 %ImportXls( A )
 
+*Import data containing probabilities of being grandfathered to receive the ES for different payments; 
+
+%MACRO ImportProbGrndfthr ( Period ) ; 
+
+	 PROC IMPORT 
+		 OUT = AllParm&Period..ProbGrndfthr_&Period
+		 DATAFILE = "&AllParmDrive.Grandfathering ES\ProbGrndfth.xlsx"        
+		 DBMS = EXCELCS REPLACE ;
+		 RANGE = "A1:E33" ;     
+		 SHEET = "&Period" ;
+	 RUN;
+
+%MEND ImportProbGrndfthr ; 
+
+%ImportProbGrndfthr (Q); 
+%ImportProbGrndfthr (A); 

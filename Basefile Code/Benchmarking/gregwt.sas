@@ -1,11 +1,33 @@
 /*-------1---------2---------3---------4---------5---------6---------7--
- The product is not provided commercially and all warranties,
+ If you receive this SAS code and wish to make use of the GREGWT macro
+ please contact the Australian Bureau of Statistics to register, on
+ email:   intermediary.management@abs.gov.au
+ This will ensure that you have access to the most up-to-date version
+ of the software.
+
+ Copyright (c) 2000 Australian Bureau of Statistics.
+
+ The macro GREGWT is protected by copyright.
+ This SAS code was produced in the Statistical Services area of the
+ Australian Bureau of Statistics (ABS) and is provided on an "as is"
+ basis. The product is not provided commercially and all warranties,
  guarantees are expressly denied and as such you are to determine the
  suitability of the code for your own purposes. The code is not
- maintained or supported. 
+ maintained or supported.  Permission for the use or distribution of
+ the code must be sought from the Australian Bureau of Statistics and
+ will only be provided in writing.  If any conflicts exist between
+ these conditions and any written conditions agreed by you and the ABS,
+ the written conditions shall prevail to the extent of any
+ inconsistencies.  Your acceptance and use of the code is taken as
+ acceptance of these conditions.
+
+
  -----------------------------------------------------------------------
 
  Module Name     : GREGWT.SAS (macro)
+ System          : Household Surveys Facilities (HSF)
+ Subsystem       :
+ Author          : Philip Adrian Bell
  Date written    : August 1999
  Language used   : SAS
  Inputs          : SAS dataset of unit data to be weighted
@@ -2136,6 +2158,7 @@ do cwbygrp = 1 to cwnumby ; %* For each BY group in turn *;
              + &NEWWT*ttunvds{_unix_,ttj} ;
            %END ;
            %IF &NPREDICT>0 %THEN %DO ;
+%*??? This line looks suspicious: it may be totally unnecessary! *;
             ttw = (ttunpos{_unix_}-1)*&NVD+ttj+1 ;
            %END ;
           end ;
@@ -2296,6 +2319,7 @@ do cwbygrp = 1 to cwnumby ; %* For each BY group in turn *;
       ttpos = ttposs{ttfrom} ; %* Where the data is *;
 
       %IF &SCNUM > &CNUM %THEN %DO ;
+       %* Is this the denominator category? *;
        %IF &WTDRES %THEN if cwgrpflg = 4 & cw_iter=0 then ;
        if 1
        %DO I = &CNUM+1 %TO &SCNUM ;
@@ -2336,6 +2360,7 @@ do cwbygrp = 1 to cwnumby ; %* For each BY group in turn *;
           ttcpos = ttposs{tti} ; %* Where to aggregate to *;
 
           %IF &SCNUM > &CNUM %THEN %DO ;
+           %* Is this the denominator category? *;
            if ttdposs{ttpos}=-1
            %DO I = &CNUM+1 %TO &SCNUM ;
             & ttc&I{tti} = &&CTYP&I %* Missing *;

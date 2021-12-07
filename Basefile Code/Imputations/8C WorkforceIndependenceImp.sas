@@ -38,15 +38,11 @@ SecEdup = 0 ;           /* Indicator variable = 1 if person is undertaking secon
 TerEdup = 0 ;           /* Indicator variable = 1 if person is undertaking tertiary study */
 
 YaFlagp = 0 ;           /* Indicator variable = 1 if person receives YA on the SIH (current year) */
-YaPrevFlagp = 0 ;       /* Indicator variable = 1 if person receives YA on the SIH (previous year) */
 
 LogYAIncAp = 0 ;        /* Log of annualised YA amount on the SIH (current year) */
-LogYaIncPrevAp = 0;     /* Log of annualised YA amount on the SIH (previous year) */
 
 IncEarnedAp = 0 ;       /* Annualised earned income amount (employee income plus business income) on the SIH (current year) */
 LogIncEarnedAp = 0 ;    /* Log of annualised earned income amount on the SIH (current year) */
-IncEarnedPrevAp = 0 ;   /* Annualised earned income amount on the SIH (previous year) */
-LogIncEarnedPrevAp = 0 ;/* Log of annualised earned income amount on the SIH (previous year) */
 
 AFHp = 0 ;              /* Indicator variable = 1 if person is living away from home */
 
@@ -76,17 +72,13 @@ IF StudyTypep IN ( 'FTNS' , 'PTNS' ) THEN TerEdup = 1 ;
 
 * YA receipt indicator variables ;
 IF YouthAllSWp > 0 THEN YaFlagp = 1 ;
-IF IncYASPAp > 0 THEN YaPrevFlagp = 1 ;
 
 * Logged and annualised YA amount variables ;
 IF YouthAllSWp > 0 THEN LogYAIncAp = LOG ( YouthAllSWp * 52 ) ;
-IF IncYASPAp > 0 THEN LogYaIncPrevAp = LOG ( IncYASPAp ) ;
 
 * Earned income amount variables ;
 IncEarnedAp = 52 * SUM ( IncEmpTotSWp , IncBusLExpSWp ) ;
 IF IncEarnedAp > 0 THEN LogIncEarnedAp = LOG ( IncEarnedAp ) ;
-IncEarnedPrevAp = SUM ( IncTotEmpIncSPAp , IncBusLExpSPAp ) ;
-IF IncEarnedPrevAp > 0 THEN LogIncEarnedPrevAp = LOG ( IncEarnedPrevAp ) ;
 
 * Away from home indicator variable ;
 IF IUTypeSp = 4 AND Famposp = 'REF' THEN AFHp = 1 ;
@@ -112,24 +104,19 @@ IF ActualAgep >= 22 THEN WrkForceIndepp = 1 ;
 
     IF WrkForceIndepp = 0 THEN DO ;
 
-
-        WFIProbp = -6.8345
-                 + Age17p * 1.9312
-                 + Age18p * 2.4175
-                 + Age19p * 2.6413
-                 + Age20p * 3.2832
-                 + Age21p * 4.3390
-                 + Age22p * 3.7911
-                 + SexIndp * -0.0197
-                 + FTEmpp * 3.2314
-                 + PTEmpp * 1.2743
-                 + SecEdup * -0.4586
-                 + TerEdup * -0.7526
-                 + LogYaIncAp * 0.1293
-                 + LogYaIncPrevAp * -0.2221
-                 + LogIncEarnedAp * -0.0294
-                 + LogIncEarnedPrevAp * 0.2488
-                 + AFHp * 0.9687 ;
+        WFIProbp = -4.0026
+                 + Age18p * 0.2011
+                 + Age19p * 1.7279
+                 + Age20p * 1.9348
+                 + Age21p * 2.3542
+                 + Age22p * 2.7236
+                 + SexIndp * -0.3620
+                 + FTEmpp * 2.7710
+                 + PTEmpp * 1.0259
+                 + SecEdup * -1.5687
+                 + TerEdup * -0.3911
+                 + LogIncEarnedAp * 0.0792
+                 + AFHp * -0.0531 ;
 
         * Transform to get predicted probability. ;
         WFIProbp = 1 / ( 1 + exp( -WFIProbp ) ) ;
@@ -149,8 +136,9 @@ DATA Person&SurveyYear ;
         
     SET Person&SurveyYear ;
 
-        DROP WFIProbp Age17p Age18p Age19p Age20p Age21p Age22p FTEmpp PTEmpp SecEdup TerEdup YaFlagp YaPrevFlagp
-             LogYAIncAp LogYaIncPrevAp IncEarnedAp LogIncEarnedAp IncEarnedPrevAp LogIncEarnedPrevAp AFHp SexIndp ;
+        DROP WFIProbp Age17p Age18p Age19p Age20p Age21p Age22p FTEmpp PTEmpp SecEdup TerEdup YaFlagp 
+             LogYAIncAp IncEarnedAp LogIncEarnedAp AFHp SexIndp ;
 
 RUN ;
+
 

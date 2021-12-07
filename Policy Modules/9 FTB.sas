@@ -77,13 +77,6 @@ OPTIONS MINOPERATOR ;
         %BabyUpfrontPayment
 
     END ;
-
-    *  Schoolkids bonus payable to Ftba recipients with dependents who are primary 
-       or secondary students. ;
-
-    IF FtbaFinalA > 0 AND ( AdjTaxIncAr + AdjTaxIncAs ) <= SkBonusIncThr
-        THEN SKBonusA = DepsFtbPr  * SkPrimaryRateA  
-                      + DepsFtbSec * SkSecStudRateA ;
   
     ************************************************************************************
     *      8.        Calculate summary payments                                        *
@@ -95,8 +88,6 @@ OPTIONS MINOPERATOR ;
 
         FtbaAr = FtbaFinalA ;
         FtbbAr = FtbbFinalA ;
-        SKBonusAr = SKBonusA;
-        BabyBonusAr = BabyBonusA;
 
     END ; 
 
@@ -104,8 +95,6 @@ OPTIONS MINOPERATOR ;
 
         FtbaAs = FtbaFinalA ;
         FtbbAs = FtbbFinalA ;
-        SKBonusAs = SKBonusA ;
-        BabyBonusAs = BabyBonusA ;
 
     END ;
 
@@ -113,14 +102,10 @@ OPTIONS MINOPERATOR ;
 
     * Create fortnightly rate;
     FtbaFr = FtbaAr / 26 ; 
-    FtbbFr = FtbbAr / 26 ; 
-    SKBonusFr = SKBonusAr / 26 ; 
-    BabyBonusFr = BabyBonusAr / 26 ; 
+    FtbbFr = FtbbAr / 26 ;  
 
     FtbaFs = FtbaAs / 26 ; 
     FtbbFs = FtbbAs / 26 ; 
-    SKBonusFs = SKBonusAs / 26 ; 
-    BabyBonusFs = BabyBonusAs / 26 ;
 
 %MEND RunFtb ;
 
@@ -212,47 +197,21 @@ OPTIONS MINOPERATOR ;
 	*Assign Energy Supplement based on grandfathering test; 
 	*Cease Energy Supplement for new FTB claimants from 20 March 2017, 
 	Budget Savings Omnibus Bill 2016 legislated September 2016; 
-
+	*remove Energy Supplement Toggle; 
 	%IF (&Duration = A AND &Year >= 2017) 
 	    OR (&Duration = Q AND &Year > 2017) 	
 	    OR (&Duration = Q AND &Year = 2017 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
-	%THEN %DO ;
-
-		%IF &RunEs = G %THEN %DO; 
+	%THEN %DO ; 
 	 
 			IF FtbaEsGfthrProb < RandFtbaEsGfthr THEN DO ;
 				FtbaMaxEsA = 0; 
 				FtbaBaseEsA = 0;
 			END ;
 		
-		%END; 
-
-		%ELSE %IF &RunEs = Y %THEN %DO; 
-			
-			FtbaMaxEsA = FtbaMaxEsA ;
-			FtbaBaseEsA = FtbaBaseEsA ;
-
-		%END; 
-
-		%ELSE %IF &RunEs = N %THEN %DO; 
-
-			FtbaMaxEsA = 0 ; 
-			FtbaBaseEsA = 0 ; 
-
-		%END; 
-
 	%END ;
 	
-	%ELSE %DO; 
-
-			FtbaMaxEsA = FtbaMaxEsA ;
-			FtbaBaseEsA = FtbaBaseEsA ;
-
-	%END; 
-
 	FtbaBaseStdA = DepsFtbA * FtbaBaseRateA ;
 		
-
   	FtbaEndSupA = DepsFtbA * FtbaSupA;
 
 	*6March2017, Budget Savings Omnibus Bill 2016,legislated in Sep 2016 , 
@@ -310,29 +269,15 @@ OPTIONS MINOPERATOR ;
 	*Assign Energy Supplement based on grandfathering test; 
 	*Cease Energy Supplement for new FTB claimants from 20 March 2017, 
 	Budget Savings Omnibus Bill 2016 legislated September 2016; 
+	*MYEFO 2018-19 Remove Energy Supplement Toggle;
 
 	%IF (&Duration = A AND &Year >= 2017) 
 	    OR (&Duration = Q AND &Year > 2017)	
 	    OR(&Duration = Q AND &Year = 2017 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
 	%THEN %DO ;
 
-		%IF &RunEs = G %THEN %DO; 
-
-			IF Ftbbflag = 1 AND RandFtbbEsGfthr GE FtbbEsGfthrProb THEN FtbbEsA = 0; 
-
-		%END; 
+		IF Ftbbflag = 1 AND RandFtbbEsGfthr GE FtbbEsGfthrProb THEN FtbbEsA = 0; 
 		
-		%ELSE %IF &RunEs = Y %THEN %DO; 
-
-			FtbbEsA = FtbbEsA ; 
-
-		%END; 
-
-		%ELSE %IF &RunEs = N %THEN %DO; 
-
-			FtbbEsA = 0 ; 
-
-		%END; 
 	%END ;	
 
 	%ELSE %DO; 
@@ -378,12 +323,13 @@ OPTIONS MINOPERATOR ;
     * Calculate Ftba maximum payment by adding all components of the maximum rate. 
       Rent assistance is converted to annual amount consistent with DSS conversion 
       formula reflecting 365 days in a year;
+	/* Round daily rent assistance amount to nearest cent */
 
     FtbaMaxTotal = FtbaMaxStdA
                  + FtbaMaxEsA
                  + FtbaEndSupA
                  + LargeFamSupA 
-                 + ( RAssMaxPossF / 14 ) * 365  
+                 + ROUND( RAssMaxPossF / 14, 0.01 ) * 365  
                  + NbsAnnualised ;
 
     * Calculate reductions from maximum rate;
@@ -660,34 +606,14 @@ OPTIONS MINOPERATOR ;
 
 %MEND Ftbbcalc ;
 ************************************************************************************
-*   Macro:   Baby Bonus and Newborn upfront payment                                *
-*   Purpose: Calculate baby bonus or newborn upfront payment payable to Ftba       *
+*   Macro:   Newborn upfront payment                                               *
+*   Purpose: Calculate newborn upfront payment payable to Ftba                     *
 *            recipient.                                                            *
 ************************************************************************************;;
 %MACRO BabyUpfrontPayment ;
 
-    * From 1 July 2013 to 1 March 2014, higher baby bonus rate applied to first 
-      child and each child in all multiple births, lower rate to subsequent 
-      (non-multiple birth) children;
-
-    %IF ( ( &Duration = A AND &Year < 2014 ) OR ( &Duration = Q AND &Year < 2014 ) 
-	OR ( &Duration = Q AND &Year = 2014 AND ( &Quarter = Mar ) ) ) %THEN %DO ;	
-
-	    IF ( AdjTaxIncAr + AdjTaxIncAs ) <= BabyBonThr THEN DO ;
-
-	            IF TotalKidsu = Kids0Su OR Kids0Su > 1 
-	                THEN BabyBonusA = BabyBon1A * Kids0Su ; 
-
-	            ELSE IF Kids0Su = 1 THEN BabyBonusA = BabyBon2A * Kids0Su ;
-	    
-	    END ;
-
-	%END ;
-
     /* From 1 March 2014, baby bonus replaced by NBS and newborn upfront payment, 
       which is payable if entitled to NBS */
-
-	%ELSE %DO ;
 
 	    IF FtbaFinalA > 0 THEN DO ;
 
@@ -697,7 +623,6 @@ OPTIONS MINOPERATOR ;
 
 	    END ;
 
-	%END ;
     
 %MEND BabyUpfrontPayment ;
 

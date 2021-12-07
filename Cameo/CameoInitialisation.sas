@@ -156,6 +156,7 @@
                             RepSupContPA -
                             SickAllSW -
                             SpbSW -
+						    SuperAcBal - 
                             WidAllSW -         
                             WifePenSW -
                             YearOfArrival - /*assume born in Australia*/
@@ -164,6 +165,10 @@
 							TotSSNonSSF -
 							PPLSW -
 							DaPPSW -
+							AssDeemed - /*added to prevent note */
+							AssTot -
+							RandAgeEsGfth - 
+					
                                 ; 
 
 *Define variables for kids that need to be initialised to zero ;
@@ -172,7 +177,7 @@
 							NsaSW -
                             /* For childcare module */
                             ChildAge -
-                            ;       
+		                    ;       
                     
 
 *Define variables for all family members that need to be initialised to 1 ;
@@ -359,10 +364,24 @@ DataScopeTypes = "PrevYrNA" ;
 
 RentPaidFh = 0 ;
 
+Occupancyu = 1 ; * 1 = owneroccupied housing, used in pension assets test ;
+
 SihQh = 1 ;
 
-/*Used in DVA module but not modelled in Cameo*/
+* Used in DVA module but not modelled in Cameo ;
 SharerFlagu = 0 ;
 
+* Family toggles for grandfathering of FTB ES ;
 
+RandFtbaEsGfthr = 0 ;
 
+RandFtbbEsGfthr = 0 ;
+
+* Family toggles for grandfathering of CSHC ES ; *EAH: Added variables to initialise ;
+
+RandCSHCEsGfthr = 0 ;
+
+RandCSHCEsGfths = 0 ;
+
+* Variable for number of children under 6 ; 
+KidsU6u = 0 ; 

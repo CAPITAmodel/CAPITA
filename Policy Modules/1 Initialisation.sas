@@ -8,7 +8,7 @@
 
 **************************************************************************************
 *   Macro:   RunInitialisation                                                       *
-*   Purpose: Coordinate  calculation                                              * 
+*   Purpose: Coordinate calculation                                                  * 
 *************************************************************************************;;
 %MACRO RunInitialisation ;
 
@@ -52,8 +52,6 @@
                            BentoFlag -
                            BentoF -
                            CumGrossIncTaxA -
-                           TempBudgRepLevA -
-                           TempBudgRepLevF -
                            GrossIncTaxA -
                            GrossIncTaxF -
 						   IncAllTestF -
@@ -191,8 +189,6 @@
                             AustudyRAssF -
                             AustudyTotA -
                             AustudyTotF -
-                            BabyBonusA -
-                            BabyBonusF -
                             CareAllA -
                             CareAllF -
                             CareAllflag -
@@ -263,26 +259,20 @@
                             FtbbA -
                             FtbbF -
 							HelpPayA - 
-							IncSupBonA -
-                            IncSupBonF -
-                            IncSupBonFlag -
-                            MawtoA -
-                            MawtoFlag -
-                            MawtoF -
+							JspAllBasicA -
+                            JspAllBasicF -
+                            JspAllEsA -
+                            JspAllEsF -
+                            JspPharmAllA -
+                            JspPharmAllF -
+                            JspRAssA -
+                            JspRAssF -
+                            JspTotA -
+                            JspTotF -
                             MedLevFamThr -
                             MedLevRedA -
                             NetIncWorkA -
                             NetIncWorkF -
-                            NsaAllBasicA -
-                            NsaAllBasicF -
-                            NsaAllEsA -
-                            NsaAllEsF -
-                            NsaPharmAllA -
-                            NsaPharmAllF -
-                            NsaRAssA -
-                            NsaRAssF -
-                            NsaTotA -
-                            NsaTotF -
                             NumCareSup -
                             PartnerAllNmA -
                             PartnerAllNmF -
@@ -341,8 +331,6 @@
                             SifsA -
                             SifsF -
                             SifsPrimFlag -
-                            SKBonusA -
-                            SKBonusF -
                             SpbAllNmA -
                             SpbAllNmF -
                             SuperToA -
@@ -444,7 +432,7 @@
 							YaMaintIncThrA -	
 
                             /* For childcare module */
-                            /* Current childcare policy */
+                            /* Previous childcare policy */
                             CcbSchPct -
                             CcbEligHrW -
                             CcbStdRate -
@@ -455,7 +443,7 @@
                             CcrAmtA -
                             CcrOutPocketA -
 
-                            /*Proposed childcare policy */
+                            /*Current childcare policy */
                             CcsEligHrW -
                             CcsHrFeeCap - 
                             CcsAmtW -
@@ -481,7 +469,6 @@
 								AssetsPenTest -
                                 AuStudyTotAu - 
                                 AuStudyTotFu - 
-                                BabyBonusA -
                                 CarerTotAu -
                                 CarerTotFu -
                                 DeductionAu -
@@ -597,8 +584,8 @@
                                 NbsFactor -
                                 NewBornSupA -
                                 NewBornUpfrontA -
-                                NsaTotAu - 
-                                NsaTotFu - 
+                                JspTotAu - 
+                                JspTotFu - 
                                 NumRates -
                                 PayOrRefAmntAu -
                                 PayOrRefAmntFu -
@@ -635,13 +622,10 @@
                                 SifsA -
                                 SifsFlag -
                                 SingPrinCareFlag -
-                                SKBonusA -
                                 SupTotAu -
                                 SupTotFu -
                                 TaxIncAu -
                                 TaxIncFu -
-                                TempBudgRepLevAu -
-                                TempBudgRepLevFu -
                                 TotTaxOffsetAu -
                                 TotTaxOffsetFu -
                                 UsedBentoAu -
@@ -681,7 +665,7 @@
                                 /* Single Parent Supplement */
 
                                 /* For childcare module */
-                                /* Current childcare policy */
+                                /* Previous childcare policy */
                                 CcbMaxHrW -
                                 CcTestInc -
                                 CcbNumKidOtr -
@@ -711,7 +695,7 @@
                                 CcrAmtAu -
                                 CcrOutPocketAu -
 
-                                /* Proposed childcare policy */
+                                /* Current childcare policy */
 
                                 CcsEffTpr -
                                 CcsMaxHrW - 
@@ -751,11 +735,11 @@
                                 RenterType -
 
                                 /* For childcare module */
-                                /* Current childcare policy */
+                                /* Previous childcare policy */
                                 CcbInfElig -
                                 CcrElig -
 
-                                /* Proposed childcare policy */
+                                /* Current childcare policy */
 
                                 ;
 
@@ -961,12 +945,12 @@
 		IncAccSA2 = "Income from accident comp (annually) dep 2"
 		IncAccSA3 = "Income from accident comp (annually) dep 3"
 		IncAccSA4 = "Income from accident comp (annually) dep 4"
-		IncAccSPAr = "Income from accident comp (previous year) ref"
-		IncAccSPAs = "Income from accident comp (previous year) sps"
-		IncAccSPA1 = "Income from accident comp (previous year) dep 1"
-		IncAccSPA2 = "Income from accident comp (previous year) dep 2"
-		IncAccSPA3 = "Income from accident comp (previous year) dep 3"
-		IncAccSPA4 = "Income from accident comp (previous year) dep 4"
+/*		IncAccSPAr = "Income from accident comp (previous year) ref"*/
+/*		IncAccSPAs = "Income from accident comp (previous year) sps"*/
+/*		IncAccSPA1 = "Income from accident comp (previous year) dep 1"*/
+/*		IncAccSPA2 = "Income from accident comp (previous year) dep 2"*/
+/*		IncAccSPA3 = "Income from accident comp (previous year) dep 3"*/
+/*		IncAccSPA4 = "Income from accident comp (previous year) dep 4"*/
 		IncAccSWr = "Income from accident comp (weekly) ref"
 		IncAccSWs = "Income from accident comp (weekly) sps"
 		IncAccSW1 = "Income from accident comp (weekly) dep 1"
@@ -1122,10 +1106,10 @@
 		IncIntBondSA2 = "Interest from bonds (annually) dep 2"
 		IncIntBondSA3 = "Interest from bonds (annually) dep 3"
 		IncIntBondSA4 = "Interest from bonds (annually) dep 4"
-		IncIntBondSPA1 = "Interest from bonds (previous year) dep 1"
-		IncIntBondSPA2 = "Interest from bonds (previous year) dep 2"
-		IncIntBondSPA3 = "Interest from bonds (previous year) dep 3"
-		IncIntBondSPA4 = "Interest from bonds (previous year) dep 4"
+/*		IncIntBondSPA1 = "Interest from bonds (previous year) dep 1"*/
+/*		IncIntBondSPA2 = "Interest from bonds (previous year) dep 2"*/
+/*		IncIntBondSPA3 = "Interest from bonds (previous year) dep 3"*/
+/*		IncIntBondSPA4 = "Interest from bonds (previous year) dep 4"*/
 		IncIntBondSW1 = "Interest from bonds (weekly) dep 1"
 		IncIntBondSW2 = "Interest from bonds (weekly) dep 2"
 		IncIntBondSW3 = "Interest from bonds (weekly) dep 3"
@@ -1134,10 +1118,10 @@
 		IncIntFinSA2 = "Interest from financial accounts (annually) dep 2"
 		IncIntFinSA3 = "Interest from financial accounts (annually) dep 3"
 		IncIntFinSA4 = "Interest from financial accounts (annually) dep 4"
-		IncIntFinSPA1 = "Interest from financial accounts (previous year) dep 1"
-		IncIntFinSPA2 = "Interest from financial accounts (previous year) dep 2"
-		IncIntFinSPA3 = "Interest from financial accounts (previous year) dep 3"
-		IncIntFinSPA4 = "Interest from financial accounts (previous year) dep 4"
+/*		IncIntFinSPA1 = "Interest from financial accounts (previous year) dep 1"*/
+/*		IncIntFinSPA2 = "Interest from financial accounts (previous year) dep 2"*/
+/*		IncIntFinSPA3 = "Interest from financial accounts (previous year) dep 3"*/
+/*		IncIntFinSPA4 = "Interest from financial accounts (previous year) dep 4"*/
 		IncIntFinSW1 = "Interest from financial accounts (weekly) dep 1"
 		IncIntFinSW2 = "Interest from financial accounts (weekly) dep 2"
 		IncIntFinSW3 = "Interest from financial accounts (weekly) dep 3"
@@ -1146,34 +1130,34 @@
 		IncIntLoanSA2 = "Interest from loans (annually) dep 2"
 		IncIntLoanSA3 = "Interest from loans (annually) dep 3"
 		IncIntLoanSA4 = "Interest from loans (annually) dep 4"
-		IncIntLoanSPA1 = "Interest from loans (previous year) dep 1"
-		IncIntLoanSPA2 = "Interest from loans (previous year) dep 2"
-		IncIntLoanSPA3 = "Interest from loans (previous year) dep 3"
-		IncIntLoanSPA4 = "Interest from loans (previous year) dep 4"
+/*		IncIntLoanSPA1 = "Interest from loans (previous year) dep 1"*/
+/*		IncIntLoanSPA2 = "Interest from loans (previous year) dep 2"*/
+/*		IncIntLoanSPA3 = "Interest from loans (previous year) dep 3"*/
+/*		IncIntLoanSPA4 = "Interest from loans (previous year) dep 4"*/
 		IncIntLoanSW1 = "Interest from loans (weekly) dep 1"
 		IncIntLoanSW2 = "Interest from loans (weekly) dep 2"
 		IncIntLoanSW3 = "Interest from loans (weekly) dep 3"
 		IncIntLoanSW4 = "Interest from loans (weekly) dep 4"
-		IncIntPA1 = "Total interest income (previous year) dep 1"
-		IncIntPA2 = "Total interest income (previous year) dep 2"
-		IncIntPA3 = "Total interest income (previous year) dep 3"
-		IncIntPA4 = "Total interest income (previous year) dep 4"
+/*		IncIntPA1 = "Total interest income (previous year) dep 1"*/
+/*		IncIntPA2 = "Total interest income (previous year) dep 2"*/
+/*		IncIntPA3 = "Total interest income (previous year) dep 3"*/
+/*		IncIntPA4 = "Total interest income (previous year) dep 4"*/
 		IncMaintSA1 = "Income from maintenance (annually) dep 1"
 		IncMaintSA2 = "Income from maintenance (annually) dep 2"
 		IncMaintSA3 = "Income from maintenance (annually) dep 3"
 		IncMaintSA4 = "Income from maintenance (annually) dep 4"
-		IncNetRentPA1 = "Income from total property rent (previous year) dep 1"
-		IncNetRentPA2 = "Income from total property rent (previous year) dep 2"
-		IncNetRentPA3 = "Income from total property rent (previous year) dep 3"
-		IncNetRentPA4 = "Income from total property rent (previous year) dep 4"
+/*		IncNetRentPA1 = "Income from total property rent (previous year) dep 1"*/
+/*		IncNetRentPA2 = "Income from total property rent (previous year) dep 2"*/
+/*		IncNetRentPA3 = "Income from total property rent (previous year) dep 3"*/
+/*		IncNetRentPA4 = "Income from total property rent (previous year) dep 4"*/
 		IncNonHHSA1 = "Income from non HH family members (annually) dep 1"
 		IncNonHHSA2 = "Income from non HH family members (annually) dep 2"
 		IncNonHHSA3 = "Income from non HH family members (annually) dep 3"
 		IncNonHHSA4 = "Income from non HH family members (annually) dep 4"
-		IncNonHHSPA1 = "Income from non HH family members (previous year) dep 1"
-		IncNonHHSPA2 = "Income from non HH family members (previous year) dep 2"
-		IncNonHHSPA3 = "Income from non HH family members (previous year) dep 3"
-		IncNonHHSPA4 = "Income from non HH family members (previous year) dep 4"
+/*		IncNonHHSPA1 = "Income from non HH family members (previous year) dep 1"*/
+/*		IncNonHHSPA2 = "Income from non HH family members (previous year) dep 2"*/
+/*		IncNonHHSPA3 = "Income from non HH family members (previous year) dep 3"*/
+/*		IncNonHHSPA4 = "Income from non HH family members (previous year) dep 4"*/
 		IncNonHHSW1 = "Income from non HH family members (weekly) dep 1"
 		IncNonHHSW2 = "Income from non HH family members (weekly) dep 2"
 		IncNonHHSW3 = "Income from non HH family members (weekly) dep 3"
@@ -1182,18 +1166,18 @@
 		IncNonTaxSuperImpA2 = "Non-taxable super income (annual) dep 2"
 		IncNonTaxSuperImpA3 = "Non-taxable super income (annual) dep 3"
 		IncNonTaxSuperImpA4 = "Non-taxable super income (annual) dep 4"
-		IncOthInvSPA1 = "Income from other financial investments (previous year) dep 1"
-		IncOthInvSPA2 = "Income from other financial investments (previous year) dep 2"
-		IncOthInvSPA3 = "Income from other financial investments (previous year) dep 3"
-		IncOthInvSPA4 = "Income from other financial investments (previous year) dep 4"
+/*		IncOthInvSPA1 = "Income from other financial investments (previous year) dep 1"*/
+/*		IncOthInvSPA2 = "Income from other financial investments (previous year) dep 2"*/
+/*		IncOthInvSPA3 = "Income from other financial investments (previous year) dep 3"*/
+/*		IncOthInvSPA4 = "Income from other financial investments (previous year) dep 4"*/
 		IncOthRegSA1 = "Income n.e.c. (annually) dep 1"
 		IncOthRegSA2 = "Income n.e.c. (annually) dep 2"
 		IncOthRegSA3 = "Income n.e.c. (annually) dep 3"
 		IncOthRegSA4 = "Income n.e.c. (annually) dep 4"
-		IncOthRegSPA1 = "Income n.e.c. (previous year) dep 1"
-		IncOthRegSPA2 = "Income n.e.c. (previous year) dep 2"
-		IncOthRegSPA3 = "Income n.e.c. (previous year) dep 3"
-		IncOthRegSPA4 = "Income n.e.c. (previous year) dep 4"
+/*		IncOthRegSPA1 = "Income n.e.c. (previous year) dep 1"*/
+/*		IncOthRegSPA2 = "Income n.e.c. (previous year) dep 2"*/
+/*		IncOthRegSPA3 = "Income n.e.c. (previous year) dep 3"*/
+/*		IncOthRegSPA4 = "Income n.e.c. (previous year) dep 4"*/
 		IncOthRegSW1 = "Income n.e.c. (weekly) dep 1"
 		IncOthRegSW2 = "Income n.e.c. (weekly) dep 2"
 		IncOthRegSW3 = "Income n.e.c. (weekly) dep 3"
@@ -1202,10 +1186,10 @@
 		IncPUTrustSA2 = "Income from public unit trusts (annually) dep 2"
 		IncPUTrustSA3 = "Income from public unit trusts (annually) dep 3"
 		IncPUTrustSA4 = "Income from public unit trusts (annually) dep 4"
-		IncPUTrustSPA1 = "Income from public unit trusts (previous year) dep 1"
-		IncPUTrustSPA2 = "Income from public unit trusts (previous year) dep 2"
-		IncPUTrustSPA3 = "Income from public unit trusts (previous year) dep 3"
-		IncPUTrustSPA4 = "Income from public unit trusts (previous year) dep 4"
+/*		IncPUTrustSPA1 = "Income from public unit trusts (previous year) dep 1"*/
+/*		IncPUTrustSPA2 = "Income from public unit trusts (previous year) dep 2"*/
+/*		IncPUTrustSPA3 = "Income from public unit trusts (previous year) dep 3"*/
+/*		IncPUTrustSPA4 = "Income from public unit trusts (previous year) dep 4"*/
 		IncPUTrustSW1 = "Income from public unit trusts (weekly) dep 1"
 		IncPUTrustSW2 = "Income from public unit trusts (weekly) dep 2"
 		IncPUTrustSW3 = "Income from public unit trusts (weekly) dep 3"
@@ -1214,10 +1198,10 @@
 		IncRentNResSA2 = "Income from non-res property (annually) dep 2"
 		IncRentNResSA3 = "Income from non-res property (annually) dep 3"
 		IncRentNResSA4 = "Income from non-res property (annually) dep 4"
-		IncRentNResSPA1 = "Income from non-res property (previous year) dep 1"
-		IncRentNResSPA2 = "Income from non-res property (previous year) dep 2"
-		IncRentNResSPA3 = "Income from non-res property (previous year) dep 3"
-		IncRentNResSPA4 = "Income from non-res property (previous year) dep 4"
+/*		IncRentNResSPA1 = "Income from non-res property (previous year) dep 1"*/
+/*		IncRentNResSPA2 = "Income from non-res property (previous year) dep 2"*/
+/*		IncRentNResSPA3 = "Income from non-res property (previous year) dep 3"*/
+/*		IncRentNResSPA4 = "Income from non-res property (previous year) dep 4"*/
 		IncRentNResSW1 = "Income from non-res property (weekly) dep 1"
 		IncRentNResSW2 = "Income from non-res property (weekly) dep 2"
 		IncRentNResSW3 = "Income from non-res property (weekly) dep 3"
@@ -1226,10 +1210,10 @@
 		IncRentResSA2 = "Income from res property (annually) dep 2"
 		IncRentResSA3 = "Income from res property (annually) dep 3"
 		IncRentResSA4 = "Income from res property (annually) dep 4"
-		IncRentResSPA1 = "Income from res property (previous year) dep 1"
-		IncRentResSPA2 = "Income from res property (previous year) dep 2"
-		IncRentResSPA3 = "Income from res property (previous year) dep 3"
-		IncRentResSPA4 = "Income from res property (previous year) dep 4"
+/*		IncRentResSPA1 = "Income from res property (previous year) dep 1"*/
+/*		IncRentResSPA2 = "Income from res property (previous year) dep 2"*/
+/*		IncRentResSPA3 = "Income from res property (previous year) dep 3"*/
+/*		IncRentResSPA4 = "Income from res property (previous year) dep 4"*/
 		IncRentResSW1 = "Income from res property (weekly) dep 1"
 		IncRentResSW2 = "Income from res property (weekly) dep 2"
 		IncRentResSW3 = "Income from res property (weekly) dep 3"
@@ -1254,14 +1238,14 @@
 		IncTaxSuperImpA2 = "Taxable super income (annual) dep 2"
 		IncTaxSuperImpA3 = "Taxable super income (annual) dep 3"
 		IncTaxSuperImpA4 = "Taxable super income (annual) dep 4"
-		IncTaxSuperImpPA1 = "Taxable super income (previous year) dep 1"
-		IncTaxSuperImpPA2 = "Taxable super income (previous year) dep 2"
-		IncTaxSuperImpPA3 = "Taxable super income (previous year) dep 3"
-		IncTaxSuperImpPA4 = "Taxable super income (previous year) dep 4"
-		IncTrustSPA1 = "Income from trusts (previous year) dep 1"
-		IncTrustSPA2 = "Income from trusts (previous year) dep 2"
-		IncTrustSPA3 = "Income from trusts (previous year) dep 3"
-		IncTrustSPA4 = "Income from trusts (previous year) dep 4"
+/*		IncTaxSuperImpPA1 = "Taxable super income (previous year) dep 1"*/
+/*		IncTaxSuperImpPA2 = "Taxable super income (previous year) dep 2"*/
+/*		IncTaxSuperImpPA3 = "Taxable super income (previous year) dep 3"*/
+/*		IncTaxSuperImpPA4 = "Taxable super income (previous year) dep 4"*/
+/*		IncTrustSPA1 = "Income from trusts (previous year) dep 1"*/
+/*		IncTrustSPA2 = "Income from trusts (previous year) dep 2"*/
+/*		IncTrustSPA3 = "Income from trusts (previous year) dep 3"*/
+/*		IncTrustSPA4 = "Income from trusts (previous year) dep 4"*/
 		IncTrustSW1 = "Income from trusts (weekly) dep 1"
 		IncTrustSW2 = "Income from trusts (weekly) dep 2"
 		IncTrustSW3 = "Income from trusts (weekly) dep 3"
@@ -1270,18 +1254,18 @@
 		IncWCompA2 = "Income from total workers comp (annually) dep 2"
 		IncWCompA3 = "Income from total workers comp (annually) dep 3"
 		IncWCompA4 = "Income from total workers comp (annually) dep 4"
-		IncWCompPA1 = "Income from total workers comp (previous year) dep 1"
-		IncWCompPA2 = "Income from total workers comp (previous year) dep 2"
-		IncWCompPA3 = "Income from total workers comp (previous year) dep 3"
-		IncWCompPA4 = "Income from total workers comp (previous year) dep 4"
+/*		IncWCompPA1 = "Income from total workers comp (previous year) dep 1"*/
+/*		IncWCompPA2 = "Income from total workers comp (previous year) dep 2"*/
+/*		IncWCompPA3 = "Income from total workers comp (previous year) dep 3"*/
+/*		IncWCompPA4 = "Income from total workers comp (previous year) dep 4"*/
 		IncWCompSA1 = "Income from regular workers comp (annually) dep 1"
 		IncWCompSA2 = "Income from regular workers comp (annually) dep 2"
 		IncWCompSA3 = "Income from regular workers comp (annually) dep 3"
 		IncWCompSA4 = "Income from regular workers comp (annually) dep 4"
-		IncWCompSPA1 = "Income from regular workers comp (previous year) dep 1"
-		IncWCompSPA2 = "Income from regular workers comp (previous year) dep 2"
-		IncWCompSPA3 = "Income from regular workers comp (previous year) dep 3"
-		IncWCompSPA4 = "Income from regular workers comp (previous year) dep 4"
+/*		IncWCompSPA1 = "Income from regular workers comp (previous year) dep 1"*/
+/*		IncWCompSPA2 = "Income from regular workers comp (previous year) dep 2"*/
+/*		IncWCompSPA3 = "Income from regular workers comp (previous year) dep 3"*/
+/*		IncWCompSPA4 = "Income from regular workers comp (previous year) dep 4"*/
 		IncWCompSW1 = "Income from regular workers comp (weekly) dep 1"
 		IncWCompSW2 = "Income from regular workers comp (weekly) dep 2"
 		IncWCompSW3 = "Income from regular workers comp (weekly) dep 3"
@@ -1294,10 +1278,10 @@
 		NetInvLossA2 = "Net investment losses (annual) dep 2"
 		NetInvLossA3 = "Net investment losses (annual) dep 3"
 		NetInvLossA4 = "Net investment losses (annual) dep 4"
-		NetInvLossPA1 = "Net investment losses (previous year) dep 1"
-		NetInvLossPA2 = "Net investment losses (previous year) dep 2"
-		NetInvLossPA3 = "Net investment losses (previous year) dep 3"
-		NetInvLossPA4 = "Net investment losses (previous year) dep 4"
+/*		NetInvLossPA1 = "Net investment losses (previous year) dep 1"*/
+/*		NetInvLossPA2 = "Net investment losses (previous year) dep 2"*/
+/*		NetInvLossPA3 = "Net investment losses (previous year) dep 3"*/
+/*		NetInvLossPA4 = "Net investment losses (previous year) dep 4"*/
 		NonSSTotSA1 = "Total non-SS benefits (fortnightly) dep 1"
 		NonSSTotSA2 = "Total non-SS benefits (fortnightly) dep 2"
 		NonSSTotSA3 = "Total non-SS benefits (fortnightly) dep 3"
@@ -1326,10 +1310,10 @@
 		RepSupContA2 = "Reportable super contributions (annual) dep 2"
 		RepSupContA3 = "Reportable super contributions (annual) dep 3"
 		RepSupContA4 = "Reportable super contributions (annual) dep 4"
-		RepSupContPA1 = "Reportable super contributions (previous year) dep 1"
-		RepSupContPA2 = "Reportable super contributions (previous year) dep 2"
-		RepSupContPA3 = "Reportable super contributions (previous year) dep 3"
-		RepSupContPA4 = "Reportable super contributions (previous year) dep 4"
+/*		RepSupContPA1 = "Reportable super contributions (previous year) dep 1"*/
+/*		RepSupContPA2 = "Reportable super contributions (previous year) dep 2"*/
+/*		RepSupContPA3 = "Reportable super contributions (previous year) dep 3"*/
+/*		RepSupContPA4 = "Reportable super contributions (previous year) dep 4"*/
 		SickAllSW1 = "Income from sickness allowance on the SIH (weekly) dep 1"
 		SickAllSW2 = "Income from sickness allowance on the SIH (weekly) dep 2"
 		SickAllSW3 = "Income from sickness allowance on the SIH (weekly) dep 3"
@@ -1819,12 +1803,6 @@
 	IncPrivLessWBF2 = "Private income adjusted for work bonus dep 2"
 	IncPrivLessWBF3 = "Private income adjusted for work bonus dep 3"
 	IncPrivLessWBF4 = "Private income adjusted for work bonus dep 4"
-	IncSupBonAr = "Income Support Bonus annual amount ref"
-	IncSupBonAs = "Income Support Bonus annual amount sps"
-	IncSupBonFr = "Income Support Bonus fortnightly amount ref"
-	IncSupBonFs = "Income Support Bonus fortnightly amount sps"
-	IncSupBonFlagr = "Income Support Bonus eligibility ref"
-	IncSupBonFlags = "Income Support Bonus eligibility sps"
 	IncTaxPrivAr = "Taxable component of private income (annual) ref"
 	IncTaxPrivAs = "Taxable component of private income (annual) sps"
 	IncTaxPrivA1 = "Taxable component of private income (annual) dep 1"
@@ -1863,6 +1841,9 @@
 	IncWBF2 = "Income test work bonus dep 2"
 	IncWBF3 = "Income test work bonus dep 3"
 	IncWBF4 = "Income test work bonus dep 4"
+	JspTotAu = "EMTR for JSP (known as Newstart Allowance pre-March 2020)"
+	JspTotAu = "Total JSP annual (known as Newstart Allowance pre-March 2020)"
+	JspTotFu = "Total JSP fortnight (known as Newstart Allowance pre-March 2020)"
 	Kids15u = "Number of dependents aged 15 in IU"
 	LevyAndChargeAr = "Levies and charges annual ref"
 	LevyAndChargeAs = "Levies and charges annual sps"
@@ -1894,12 +1875,6 @@
 	LitoFlag2 = "LITO eligibility dep 2"
 	LitoFlag3 = "LITO eligibility dep 3"
 	LitoFlag4 = "LITO eligibility dep 4"
-	MawtoAr = "Mature age worker tax offset annual ref"
-	MawtoAs = "Mature age worker tax offset annual sps"
-	MawtoFr = "Mature age worker tax offset fortnight ref"
-	MawtoFs = "Mature age worker tax offset fortnight sps"
-	MawtoFlagr = "MAWTO eligibility ref"
-	MawtoFlags = "MAWTO eligibility sps"
 	MedLevAr = "Medicare levy annual ref"
 	MedLevAs = "Medicare levy annual sps"
 	MedLevA1 = "Medicare levy annual dep 1"
@@ -2005,9 +1980,6 @@
 	NetIncWorkFr = "Net income from working (fortnightly) ref"
 	NetIncWorkFs = "Net income from working (fortnightly) sps"
 	NewBornUpfrontA = "Newborn upfront payment"
-	NsaTotAu = "EMTR for NSA"
-	NsaTotAu = "Total NSA annual"
-	NsaTotFu = "Total NSA fortnight"
 	NumCareSupr = "Number of Carer Supplements eligible ref"
 	NumCareSups = "Number of Carer Supplements eligible sps"
 	NumRates = "Number of tax rates"
@@ -2227,10 +2199,6 @@
 	SifsPrimFlagr = "Single Income Family Supplement eligibility of primary carer ref"
 	SifsPrimFlags = "Single Income Family Supplement eligibility of primary carer sps"
 	SingPrinCareFlag = "Single principle carer"
-	SKBonusAr = "Schoolkids bonus annual ref"
-	SKBonusAs = "Schoolkids bonus annual sps"
-	SKBonusFr = "Schoolkids bonus fortnightly ref"
-	SKBonusFs = "Schoolkids bonus fortnightly sps"
 	SpbAllNmAr = "Special Benefit received (annual) ref"
 	SpbAllNmAs = "Special Benefit received (annual) sps"
 	SpbAllNmFr = "Special Benefit received (fortnight) ref"
@@ -2273,20 +2241,6 @@
 	TelAllHighFlags = "Telephone Allowance (high rate) eligibility sps"
 	TelAllLowFlagr = "Telephone Allowance (low rate) eligibility ref"
 	TelAllLowFlags = "Telephone Allowance (low rate) eligibility sps"
-	TempBudgRepLevAr = "Temporary Budget Repair Levy annual ref"
-	TempBudgRepLevAs = "Temporary Budget Repair Levy annual sps"
-	TempBudgRepLevA1 = "Temporary Budget Repair Levy annual dep 1"
-	TempBudgRepLevA2 = "Temporary Budget Repair Levy annual dep 2"
-	TempBudgRepLevA3 = "Temporary Budget Repair Levy annual dep 3"
-	TempBudgRepLevA4 = "Temporary Budget Repair Levy annual dep 4"
-	TempBudgRepLevAu = "Temporary Budget Repair Levy annual"
-	TempBudgRepLevFr = "Temporary Budget Repair Levy fortnight ref"
-	TempBudgRepLevFs = "Temporary Budget Repair Levy fortnight sps"
-	TempBudgRepLevF1 = "Temporary Budget Repair Levy fortnight dep 1"
-	TempBudgRepLevF2 = "Temporary Budget Repair Levy fortnight dep 2"
-	TempBudgRepLevF3 = "Temporary Budget Repair Levy fortnight dep 3"
-	TempBudgRepLevF4 = "Temporary Budget Repair Levy fortnight dep 4"
-	TempBudgRepLevFu = "Temporary Budget Repair Levy fortnight"
 	TotTaxOffsetAr = "Total tax offset entitlement annual ref"
 	TotTaxOffsetAs = "Total tax offset entitlement annual sps"
 	TotTaxOffsetA1 = "Total tax offset entitlement annual dep 1"
@@ -2475,12 +2429,12 @@
 	DeductionF2 = "Deductions (fortnightly) dep 2"
 	DeductionF3 = "Deductions (fortnightly) dep 3"
 	DeductionF4 = "Deductions (fortnightly) dep 4"
-	DeductionPAr = "Deductions (previous year) ref"
-	DeductionPAs = "Deductions (previous year) sps"
-	DeductionPA1 = "Deductions (previous year) dep 1"
-	DeductionPA2 = "Deductions (previous year) dep 2"
-	DeductionPA3 = "Deductions (previous year) dep 3"
-	DeductionPA4 = "Deductions (previous year) dep 4"
+/*	DeductionPAr = "Deductions (previous year) ref"*/
+/*	DeductionPAs = "Deductions (previous year) sps"*/
+/*	DeductionPA1 = "Deductions (previous year) dep 1"*/
+/*	DeductionPA2 = "Deductions (previous year) dep 2"*/
+/*	DeductionPA3 = "Deductions (previous year) dep 3"*/
+/*	DeductionPA4 = "Deductions (previous year) dep 4"*/
 	DeductionWrkAr = "Work related deductions (annually) ref"
 	DeductionWrkAs = "Work related deductions (annually) sps"
 	DeductionWrkA1 = "Work related deductions (annually) dep 1"
@@ -2512,12 +2466,12 @@
 	FrankCrImpF2 = "Franking credits (fortnightly) dep 2"
 	FrankCrImpF3 = "Franking credits (fortnightly) dep 3"
 	FrankCrImpF4 = "Franking credits (fortnightly) dep 4"
-	FrankCrImpPAr = "Franking credits (previous year) ref"
-	FrankCrImpPAs = "Franking credits (previous year) sps"
-	FrankCrImpPA1 = "Franking credits (previous year) dep 1"
-	FrankCrImpPA2 = "Franking credits (previous year) dep 2"
-	FrankCrImpPA3 = "Franking credits (previous year) dep 3"
-	FrankCrImpPA4 = "Franking credits (previous year) dep 4"
+/*	FrankCrImpPAr = "Franking credits (previous year) ref"*/
+/*	FrankCrImpPAs = "Franking credits (previous year) sps"*/
+/*	FrankCrImpPA1 = "Franking credits (previous year) dep 1"*/
+/*	FrankCrImpPA2 = "Franking credits (previous year) dep 2"*/
+/*	FrankCrImpPA3 = "Franking credits (previous year) dep 3"*/
+/*	FrankCrImpPA4 = "Franking credits (previous year) dep 4"*/
 	FrankCrImpWr = "Franking credits (weekly) ref"
 	FrankCrImpWs = "Franking credits (weekly) sps"
 	FrankCrImpW1 = "Franking credits (weekly) dep 1"
@@ -2548,12 +2502,12 @@
 	IncDivSA2 = "Income from dividends (annually) dep 2"
 	IncDivSA3 = "Income from dividends (annually) dep 3"
 	IncDivSA4 = "Income from dividends (annually) dep 4"
-	IncDivSPAr = "Income from dividends (previous year) ref"
-	IncDivSPAs = "Income from dividends (previous year) sps"
-	IncDivSPA1 = "Income from dividends (previous year) dep 1"
-	IncDivSPA2 = "Income from dividends (previous year) dep 2"
-	IncDivSPA3 = "Income from dividends (previous year) dep 3"
-	IncDivSPA4 = "Income from dividends (previous year) dep 4"
+/*	IncDivSPAr = "Income from dividends (previous year) ref"*/
+/*	IncDivSPAs = "Income from dividends (previous year) sps"*/
+/*	IncDivSPA1 = "Income from dividends (previous year) dep 1"*/
+/*	IncDivSPA2 = "Income from dividends (previous year) dep 2"*/
+/*	IncDivSPA3 = "Income from dividends (previous year) dep 3"*/
+/*	IncDivSPA4 = "Income from dividends (previous year) dep 4"*/
 	IncIntAr = "Total interest income (annually) ref"
 	IncIntAs = "Total interest income (annually) sps"
 	IncIntA1 = "Total interest income (annually) dep 1"
@@ -2562,24 +2516,24 @@
 	IncIntA4 = "Total interest income (annually) dep 4"
 	IncIntBondSAr = "Interest from bonds (annually) ref"
 	IncIntBondSAs = "Interest from bonds (annually) sps"
-	IncIntBondSPAr = "Interest from bonds (previous year) ref"
-	IncIntBondSPAs = "Interest from bonds (previous year) sps"
+/*	IncIntBondSPAr = "Interest from bonds (previous year) ref"*/
+/*	IncIntBondSPAs = "Interest from bonds (previous year) sps"*/
 	IncIntBondSWr = "Interest from bonds (weekly) ref"
 	IncIntBondSWs = "Interest from bonds (weekly) sps"
 	IncIntFinSAr = "Interest from financial accounts (annually) ref"
 	IncIntFinSAs = "Interest from financial accounts (annually) sps"
-	IncIntFinSPAr = "Interest from financial accounts (previous year) ref"
-	IncIntFinSPAs = "Interest from financial accounts (previous year) sps"
+/*	IncIntFinSPAr = "Interest from financial accounts (previous year) ref"*/
+/*	IncIntFinSPAs = "Interest from financial accounts (previous year) sps"*/
 	IncIntFinSWr = "Interest from financial accounts (weekly) ref"
 	IncIntFinSWs = "Interest from financial accounts (weekly) sps"
 	IncIntLoanSAr = "Interest from loans (annually) ref"
 	IncIntLoanSAs = "Interest from loans (annually) sps"
-	IncIntLoanSPAr = "Interest from loans (previous year) ref"
-	IncIntLoanSPAs = "Interest from loans (previous year) sps"
+/*	IncIntLoanSPAr = "Interest from loans (previous year) ref"*/
+/*	IncIntLoanSPAs = "Interest from loans (previous year) sps"*/
 	IncIntLoanSWr = "Interest from loans (weekly) ref"
 	IncIntLoanSWs = "Interest from loans (weekly) sps"
-	IncIntPAr = "Total interest income (previous year) ref"
-	IncIntPAs = "Total interest income (previous year) sps"
+/*	IncIntPAr = "Total interest income (previous year) ref"*/
+/*	IncIntPAs = "Total interest income (previous year) sps"*/
 	IncMaintSAr = "Income from maintenance (annually) ref"
 	IncMaintSAs = "Income from maintenance (annually) sps"
 	IncMaintSFr = "Income from maintenance (fortnightly) ref"
@@ -2588,8 +2542,8 @@
 	IncMaintSF2 = "Income from maintenance (fortnightly) dep 2"
 	IncMaintSF3 = "Income from maintenance (fortnightly) dep 3"
 	IncMaintSF4 = "Income from maintenance (fortnightly) dep 4"
-	IncMaintSPAr = "Income from maintenance (previous year) ref"
-	IncMaintSPAs = "Income from maintenance (previous year) sps"
+/*	IncMaintSPAr = "Income from maintenance (previous year) ref"*/
+/*	IncMaintSPAs = "Income from maintenance (previous year) sps"*/
 	IncMaintSWr = "Income from maintenance (weekly) ref"
 	IncMaintSWs = "Income from maintenance (weekly) sps"
 	IncNetRentAr = "Income from total property rent (annually) ref"
@@ -2598,12 +2552,12 @@
 	IncNetRentA2 = "Income from total property rent (annually) dep 2"
 	IncNetRentA3 = "Income from total property rent (annually) dep 3"
 	IncNetRentA4 = "Income from total property rent (annually) dep 4"
-	IncNetRentPAr = "Income from total property rent (previous year) ref"
-	IncNetRentPAs = "Income from total property rent (previous year) sps"
+/*	IncNetRentPAr = "Income from total property rent (previous year) ref"*/
+/*	IncNetRentPAs = "Income from total property rent (previous year) sps"*/
 	IncNonHHSAr = "Income from non HH family members (annually) ref"
 	IncNonHHSAs = "Income from non HH family members (annually) sps"
-	IncNonHHSPAr = "Income from non HH family members (previous year) ref"
-	IncNonHHSPAs = "Income from non HH family members (previous year) sps"
+/*	IncNonHHSPAr = "Income from non HH family members (previous year) ref"*/
+/*	IncNonHHSPAs = "Income from non HH family members (previous year) sps"*/
 	IncNonHHSWr = "Income from non HH family members (weekly) ref"
 	IncNonHHSWs = "Income from non HH family members (weekly) sps"
 	IncNonTaxSuperImpAr = "Non-taxable super income (annual) ref"
@@ -2614,42 +2568,42 @@
 	IncOSPenSA2 = "Income from overseas pensions (annually) dep 2"
 	IncOSPenSA3 = "Income from overseas pensions (annually) dep 3"
 	IncOSPenSA4 = "Income from overseas pensions (annually) dep 4"
-	IncOSPenSPAr = "Income from overseas pensions (previous year) ref"
-	IncOSPenSPAs = "Income from overseas pensions (previous year) sps"
-	IncOSPenSPA1 = "Income from overseas pensions (previous year) dep 1"
-	IncOSPenSPA2 = "Income from overseas pensions (previous year) dep 2"
-	IncOSPenSPA3 = "Income from overseas pensions (previous year) dep 3"
-	IncOSPenSPA4 = "Income from overseas pensions (previous year) dep 4"
+/*	IncOSPenSPAr = "Income from overseas pensions (previous year) ref"*/
+/*	IncOSPenSPAs = "Income from overseas pensions (previous year) sps"*/
+/*	IncOSPenSPA1 = "Income from overseas pensions (previous year) dep 1"*/
+/*	IncOSPenSPA2 = "Income from overseas pensions (previous year) dep 2"*/
+/*	IncOSPenSPA3 = "Income from overseas pensions (previous year) dep 3"*/
+/*	IncOSPenSPA4 = "Income from overseas pensions (previous year) dep 4"*/
 	IncOthInvSAr = "Income from other financial investments (annually) ref"
 	IncOthInvSAs = "Income from other financial investments (annually) sps"
 	IncOthInvSA1 = "Income from other financial investments (annually) dep 1"
 	IncOthInvSA2 = "Income from other financial investments (annually) dep 2"
 	IncOthInvSA3 = "Income from other financial investments (annually) dep 3"
 	IncOthInvSA4 = "Income from other financial investments (annually) dep 4"
-	IncOthInvSPAr = "Income from other financial investments (previous year) ref"
-	IncOthInvSPAs = "Income from other financial investments (previous year) sps"
+/*	IncOthInvSPAr = "Income from other financial investments (previous year) ref"*/
+/*	IncOthInvSPAs = "Income from other financial investments (previous year) sps"*/
 	IncOthRegSAr = "Income n.e.c. (annually) ref"
 	IncOthRegSAs = "Income n.e.c. (annually) sps"
-	IncOthRegSPAr = "Income n.e.c. (previous year) ref"
-	IncOthRegSPAs = "Income n.e.c. (previous year) sps"
+/*	IncOthRegSPAr = "Income n.e.c. (previous year) ref"*/
+/*	IncOthRegSPAs = "Income n.e.c. (previous year) sps"*/
 	IncOthRegSWr = "Income n.e.c. (weekly) ref"
 	IncOthRegSWs = "Income n.e.c. (weekly) sps"
 	IncPUTrustSAr = "Income from public unit trusts (annually) ref"
 	IncPUTrustSAs = "Income from public unit trusts (annually) sps"
-	IncPUTrustSPAr = "Income from public unit trusts (previous year) ref"
-	IncPUTrustSPAs = "Income from public unit trusts (previous year) sps"
+/*	IncPUTrustSPAr = "Income from public unit trusts (previous year) ref"*/
+/*	IncPUTrustSPAs = "Income from public unit trusts (previous year) sps"*/
 	IncPUTrustSWr = "Income from public unit trusts (weekly) ref"
 	IncPUTrustSWs = "Income from public unit trusts (weekly) sps"
 	IncRentNResSAr = "Income from non-res property (annually) ref"
 	IncRentNResSAs = "Income from non-res property (annually) sps"
-	IncRentNResSPAr = "Income from non-res property (previous year) ref"
-	IncRentNResSPAs = "Income from non-res property (previous year) sps"
+/*	IncRentNResSPAr = "Income from non-res property (previous year) ref"*/
+/*	IncRentNResSPAs = "Income from non-res property (previous year) sps"*/
 	IncRentNResSWr = "Income from non-res property (weekly) ref"
 	IncRentNResSWs = "Income from non-res property (weekly) sps"
 	IncRentResSAr = "Income from res property (annually) ref"
 	IncRentResSAs = "Income from res property (annually) sps"
-	IncRentResSPAr = "Income from res property (previous year) ref"
-	IncRentResSPAs = "Income from res property (previous year) sps"
+/*	IncRentResSPAr = "Income from res property (previous year) ref"*/
+/*	IncRentResSPAs = "Income from res property (previous year) sps"*/
 	IncRentResSWr = "Income from res property (weekly) ref"
 	IncRentResSWs = "Income from res property (weekly) sps"
 	IncRoyalSAr = "Income from royalties (annually) ref"
@@ -2658,12 +2612,12 @@
 	IncRoyalSA2 = "Income from royalties (annually) dep 2"
 	IncRoyalSA3 = "Income from royalties (annually) dep 3"
 	IncRoyalSA4 = "Income from royalties (annually) dep 4"
-	IncRoyalSPAr = "Income from royalties (previous year) ref"
-	IncRoyalSPAs = "Income from royalties (previous year) sps"
-	IncRoyalSPA1 = "Income from royalties (previous year) dep 1"
-	IncRoyalSPA2 = "Income from royalties (previous year) dep 2"
-	IncRoyalSPA3 = "Income from royalties (previous year) dep 3"
-	IncRoyalSPA4 = "Income from royalties (previous year) dep 4"
+/*	IncRoyalSPAr = "Income from royalties (previous year) ref"*/
+/*	IncRoyalSPAs = "Income from royalties (previous year) sps"*/
+/*	IncRoyalSPA1 = "Income from royalties (previous year) dep 1"*/
+/*	IncRoyalSPA2 = "Income from royalties (previous year) dep 2"*/
+/*	IncRoyalSPA3 = "Income from royalties (previous year) dep 3"*/
+/*	IncRoyalSPA4 = "Income from royalties (previous year) dep 4"*/
 	IncServiceAr = "Personal services income (annual) ref"
 	IncServiceAs = "Personal services income (annual) sps"
 	IncServiceA1 = "Personal services income (annual) dep 1"
@@ -2698,10 +2652,10 @@
 	IncSSTotSW4 = "Total SS benefits (weekly) dep 4"
 	IncTaxSuperImpAr = "Taxable super income (annual) ref"
 	IncTaxSuperImpAs = "Taxable super income (annual) sps"
-	IncTaxSuperImpPAr = "Taxable super income (previous year) ref"
-	IncTaxSuperImpPAs = "Taxable super income (previous year) sps" 
-	IncTrustSPAr = "Income from trusts (previous year) ref"
-	IncTrustSPAs = "Income from trusts (previous year) sps"
+/*	IncTaxSuperImpPAr = "Taxable super income (previous year) ref"*/
+/*	IncTaxSuperImpPAs = "Taxable super income (previous year) sps" */
+/*	IncTrustSPAr = "Income from trusts (previous year) ref"*/
+/*	IncTrustSPAs = "Income from trusts (previous year) sps"*/
 	IncTrustSWr = "Income from trusts (weekly) ref"
 	IncTrustSWs = "Income from trusts (weekly) sps"
 	IncWageSAr = "Income from wage and salary (annually) ref"
@@ -2716,12 +2670,12 @@
 	IncWageSF2 = "Income from wage and salary (fortnightly) dep 2"
 	IncWageSF3 = "Income from wage and salary (fortnightly) dep 3"
 	IncWageSF4 = "Income from wage and salary (fortnightly) dep 4"
-	IncWageSPAr = "Income from wage and salary (previous year) ref"
-	IncWageSPAs = "Income from wage and salary (previous year) sps"
-	IncWageSPA1 = "Income from wage and salary (previous year) dep 1"
-	IncWageSPA2 = "Income from wage and salary (previous year) dep 2"
-	IncWageSPA3 = "Income from wage and salary (previous year) dep 3"
-	IncWageSPA4 = "Income from wage and salary (previous year) dep 4"
+/*	IncWageSPAr = "Income from wage and salary (previous year) ref"*/
+/*	IncWageSPAs = "Income from wage and salary (previous year) sps"*/
+/*	IncWageSPA1 = "Income from wage and salary (previous year) dep 1"*/
+/*	IncWageSPA2 = "Income from wage and salary (previous year) dep 2"*/
+/*	IncWageSPA3 = "Income from wage and salary (previous year) dep 3"*/
+/*	IncWageSPA4 = "Income from wage and salary (previous year) dep 4"*/
 	IncWageSWr = "Income from wage and salary (weekly) ref"
 	IncWageSWs = "Income from wage and salary (weekly) sps"
 	IncWageSW1 = "Income from wage and salary (weekly) dep 1"
@@ -2730,12 +2684,12 @@
 	IncWageSW4 = "Income from wage and salary (weekly) dep 4"
 	IncWCompAr = "Income from total workers comp (annually) ref"
 	IncWCompAs = "Income from total workers comp (annually) sps"
-	IncWCompPAr = "Income from total workers comp (previous year) ref"
-	IncWCompPAs = "Income from total workers comp (previous year) sps"
+/*	IncWCompPAr = "Income from total workers comp (previous year) ref"*/
+/*	IncWCompPAs = "Income from total workers comp (previous year) sps"*/
 	IncWCompSAr = "Income from regular workers comp (annually) ref"
 	IncWCompSAs = "Income from regular workers comp (annually) sps"
-	IncWCompSPAr = "Income from regular workers comp (previous year) ref"
-	IncWCompSPAs = "Income from regular workers comp (previous year) sps"
+/*	IncWCompSPAr = "Income from regular workers comp (previous year) ref"*/
+/*	IncWCompSPAs = "Income from regular workers comp (previous year) sps"*/
 	IncWCompSWr = "Income from regular workers comp (weekly) ref"
 	IncWCompSWs = "Income from regular workers comp (weekly) sps"
 	Kids0Su = "Number of kids aged 0 in IU"
@@ -2755,12 +2709,12 @@
 	Kids9Su = "Number of kids aged 9 in IU"
 	MaintPaidSAr = "Maintenance paid (annual) ref"
 	MaintPaidSAs = "Maintenance paid (annual) sps"
-	MaintPaidSPAr = "Maintenance paid (previous year) ref"
-	MaintPaidSPAs = "Maintenance paid (previous year) sps"
+/*	MaintPaidSPAr = "Maintenance paid (previous year) ref"*/
+/*	MaintPaidSPAs = "Maintenance paid (previous year) sps"*/
 	NetInvLossAr = "Net investment losses (annual) ref"
 	NetInvLossAs = "Net investment losses (annual) sps"
-	NetInvLossPAr = "Net investment losses (previous year) ref"
-	NetInvLossPAs = "Net investment losses (previous year) sps"
+/*	NetInvLossPAr = "Net investment losses (previous year) ref"*/
+/*	NetInvLossPAs = "Net investment losses (previous year) sps"*/
 	NonSSCCSWr = "Non-SS childcare (weekly) ref"
 	NonSSCCSWs = "Non-SS childcare (weekly) sps"
 	NonSSCCSW1 = "Non-SS childcare (weekly) dep 1"

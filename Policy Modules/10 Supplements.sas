@@ -40,22 +40,9 @@
 
     END ; 
 
-    ***********************************************************************************
-    *      3.        Income Support Bonus                                             *
-    **********************************************************************************;
-
-    * Determine eligibility for and assign rate of Income Support Bonus ;
-
-    %IncSupBon( r )
-
-    IF Coupleu = 1 THEN DO ; 
-
-        %IncSupBon( s )
-
-    END ; 
 
     ***********************************************************************************
-    *      4.        Commonwealth Seniors Health Card                                 *
+    *      3.        Commonwealth Seniors Health Card                                 *
     **********************************************************************************;
 
     %CwthSenHlthCard( r )
@@ -67,7 +54,7 @@
     END ; 
 
     ***********************************************************************************
-    *      5.        Seniors Supplement                                               *
+    *      4.        Seniors Supplement                                               *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Seniors Supplement ;
@@ -81,7 +68,7 @@
     END ; 
 
     ***********************************************************************************
-    *      6.        Pensioner Education Supplement                                   *
+    *      5.        Pensioner Education Supplement                                   *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Pensioner Education Supplement ;
@@ -93,7 +80,7 @@
 
     END ; 
     ***********************************************************************************
-    *      7.        Telephone Allowance                                              *
+    *      6.        Telephone Allowance                                              *
     **********************************************************************************;
 
     * Determine eligibility for Telephone Allowance ;
@@ -124,7 +111,7 @@
     END ; 
         
     ***********************************************************************************
-    *      8.        Utilities Allowance                                              *
+    *      7.        Utilities Allowance                                              *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Utilities Allowance ;
@@ -138,7 +125,7 @@
     END ; 
 
     ***********************************************************************************
-    *      9.        Single Income Family Supplement                                  *
+    *      8.        Single Income Family Supplement                                  *
     **********************************************************************************;
 
     * Determine eligibility for and assign rate of Single Income Family Supplement ;
@@ -155,7 +142,7 @@
     END ; 
 
     ***********************************************************************************
-    *      10.        Construct Supplements Aggregates                                *
+    *      9.        Construct Supplements Aggregates                                *
     **********************************************************************************;
 
     %SupplementsAggregates( r )
@@ -199,8 +186,9 @@
         CareAllF&psn = 0 ;
         CareAllA&psn = 0 ; 
         CareAllFlag&psn = 0 ;
-	END;
-	%END;
+	END ;
+	%END ;
+
 %MEND CarerAllowance ;
 
 **********************************************************************************
@@ -251,40 +239,6 @@
     END ;
 
 %MEND CarerSupplement ;
-
-**********************************************************************************
-*   Macro:   IncSupBon                                                           *
-*   Purpose: Determine eligibility for and assign rate of Income Support Bonus.  *
-*********************************************************************************;;
-%MACRO IncSupBon( psn ) ;
-
-    * Eligibility;
-    * aged under Age Pension age ;
-    IF ( ( Sex&psn = 'F' AND ActualAge&psn < FemaleAgePenAge )         
-      OR ( Sex&psn = 'M' AND ActualAge&psn < MaleAgePenAge ) )
-    /* receiving either Newstart Allowance, Youth Allowance, Parenting Payment,
-      Sickness Allowance, Austudy, Special Benefit or Abstudy */
-    AND ( AllowType&psn IN ( 'NSA' , 'YASTUD' , 'YAOTHER' , 'PPP' , 'SICK' , 'AUSTUDY' , 'SPB' , 'ABSTUDY' ) 
-      OR PenType&psn = 'PPS' )
-
-        THEN IncSupBonFlag&psn = 1 ;
-
-     * Rate ;
-
-    IF IncSupBonFlag&psn = 1 THEN DO ;
-
-    * Singles. Convert from Bi-annual to fornightly amount ;
-
-        IF Coupleu = 0 THEN IncSupBonF&psn = IncSupBonMaxBs / 13 ; 
-
-        * Couples. Convert from Bi-annual to fornightly amount ;
-        ELSE IF Coupleu = 1 THEN IncSupBonF&psn = IncSupBonMaxBc / 13 ; 
-
-        IncSupBonA&psn = IncSupBonF&psn * 26 ;
-
-    END ;
-
-%MEND IncSupBon ;
 
 **********************************************************************************
 *   Macro:   CwthSenHlthCard                                                     *
@@ -359,33 +313,17 @@
 			*Assign Energy Supplement for singles based on grandfathering test; 
 			*Cease Energy Supplement for new CSHC claimants from 20 March 2017. 
 			Budget Savings Omnibus Bill 2016 legislated September 2016.;
-
+			*MYEFO 2018-19 Remove Energy Supplement Toggle;
 			%IF (&Duration = A AND &Year >= 2017) 
 			    OR (&Duration = Q AND &Year > 2017) 	
 			    OR (&Duration = Q AND &Year = 2017 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
 			%THEN %DO ;
 
-				%IF &RunEs = G %THEN %DO ; 
-
 					IF PenType&psn IN ('AGE') THEN DO ;
-						IF RandAgeEsGfth&psn < AgeEsGfthrProb THEN SenSupEsF&psn = SenSupEsMaxFS ;
+						IF RandCSHCEsGfth&psn < CSHCEsGfthrProb THEN SenSupEsF&psn = SenSupEsMaxFS ;
 						ELSE  SenSupEsF&psn = 0;
 					END; 
-
-				%END;  
-
-				%ELSE %IF &RunEs = Y %THEN %DO ; 
-
-					SenSupEsF&psn = SenSupEsMaxFS ;  
-
-				%END; 
-
-				%ELSE %IF &RunEs = N %THEN %DO ; 
-
-					SenSupEsF&psn = 0 ; 
-
-				%END; 
-
+	
 			%END; 
 
 			/*End*/
@@ -411,33 +349,17 @@
 			*Assign Energy Supplement for couples based on grandfathering test; 
 			*Cease Energy Supplement for new CSHC claimants from 20 March 2017. 
 			Budget Savings Omnibus Bill 2016 legislated September 2016.;
+			*MYEFO 2018-19 Remove Energy Supplement Toggle; 
 
 			%IF (&Duration = A AND &Year >= 2017) 
 			    OR (&Duration = Q AND &Year > 2017) 	
 			    OR (&Duration = Q AND &Year = 2017 AND (&Quarter = Jun OR &Quarter = Sep OR &Quarter = Dec) ) 
 			%THEN %DO ;
-		
-
-				%IF &RunEs = G %THEN %DO ; 
 
 					IF PenType&psn IN ('AGE') THEN DO ;
-						IF RandAgeEsGfth&psn < AgeEsGfthrProb THEN SenSupEsF&psn = SenSupEsMaxFC ;
+						IF RandCSHCEsGfth&psn < cshcEsGfthrProb THEN SenSupEsF&psn = SenSupEsMaxFC ; 
 						ELSE  SenSupEsF&psn = 0;
 					END; 
-
-				%END; 
-
-				%ELSE %IF &RunEs = Y %THEN %DO ; 
-
-					SenSupEsF&psn = SenSupEsMaxFC ; 
-
-				%END; 
-
-				%ELSE %IF &RunEs = N %THEN %DO ; 
-
-					SenSupEsF&psn = 0 ; 
-
-				%END; 
 
 			%END; 
 			/*End*/
@@ -480,8 +402,8 @@
                 OR ( PenType&psn = 'WIFE'    AND PenType&partner = 'DSP' )
             /* Receives Widow Allowance */
                 OR ( AllowType&psn = 'WIDOW' ) 
-            /* Receives NSA and is a single principal carer */
-                OR ( AllowType&psn = 'NSA' AND SingPrinCareFlag = 1 ) ) )         
+            /* Receives JSP and is a single principal carer */
+                OR ( AllowType&psn = 'JSP' AND SingPrinCareFlag = 1 ) ) )         
             /* Studying part-time */
             OR ( StudyType&psn IN ( 'PTNS' )                  
             /*Receives Disability Support Pension, Carer Payment or Parenting Payment Single*/
@@ -560,34 +482,34 @@
 
         THEN TelAllFlag&psn = 1 ; 
 
-    * (2, 2A) - Receipt of YA Other or NSA, partial capacity to work (not modelled) 
+    * (2, 2A) - Receipt of YA Other or JSP, partial capacity to work (not modelled) 
                 or single principal carer (modelled). ;
-    IF AllowType&psn IN ( 'YAOTHER' , 'NSA' )
+    IF AllowType&psn IN ( 'YAOTHER' , 'JSP' )
     AND SingPrinCareFlag = 1 
 
         THEN TelAllFlag&psn = 1 ;
 
-    * (2B) - Receipt of YA Other or NSA, couple principal carer, partner is
-             receiving NSA or Sickness Allowance and is at least 60 years of age
+    * (2B) - Receipt of YA Other or JSP, couple principal carer, partner is
+             receiving JSP or Sickness Allowance and is at least 60 years of age
              and has been receiving a social security payment for at least 9
              months. NOT MODELLED;
 
     * (2C, 2D) - not modelled ;
 
-    * (3) - Receiving Widow Allowance, NSA, Sickness Allowance, Partner Allowance
+    * (3) - Receiving Widow Allowance, JSP, Sickness Allowance, Partner Allowance
             PPP or Special Benefit, is at least 60 years of age and has been 
             receiving a social security payment for at least 9 months. ; 
-    IF AllowType&psn IN ( 'WIDOW' , 'NSA' , 'SICK' , 'PARTNER' , 'PPP' , 'SPB' )
+    IF AllowType&psn IN ( 'WIDOW' , 'JSP' , 'SICK' , 'PARTNER' , 'PPP' , 'SPB' )
     AND AllowSubType&psn = 'OLDLTR' 
 
         THEN TelAllFlag&psn = 1 ;
 
     * (3A) - Receiving Partner Allowance or PPP, partner is
-             receiving NSA or Sickness Allowance and is at least 60 years of age
+             receiving JSP or Sickness Allowance and is at least 60 years of age
              and has been receiving a social security payment for at least 9
              months. ;
     IF AllowType&psn IN ( 'PARTNER' , 'PPP' )
-    AND AllowType&partner IN ( 'NSA' , 'SICK' ) 
+    AND AllowType&partner IN ( 'JSP' , 'SICK' ) 
     AND AllowSubType&partner = 'OLDLTR' 
 
         THEN TelAllFlag&psn = 1 ;
@@ -752,7 +674,8 @@
 *SIFS closed on 1 July 2017 - CAPITA does not model the grandfathering of the removal; 
  %IF ( &Duration = A AND &Year < 2017 ) 
 	 OR ( &Duration = Q AND &Year < 2017 ) 
-	 OR ( &Duration = Q AND &Year = 2017 AND ( &Quarter = Mar or  &Quarter = Jun ) )
+	 OR ( &Duration = Q AND &Year = 2017 AND ( &Quarter = Mar or  &Quarter = Jun ))
+     
  %THEN %DO ; 
 *End; 
 
@@ -763,7 +686,7 @@
     AND TaxIncA&psn > TaxIncA&partner            /* Be the primary income earner in the family*/
     AND SifsThrLwr <= TaxIncA&psn <= SifsthrUpr  /* Be between the income thresholds */
     THEN DO ;
-
+        
         SifsFlag = 1 ;
         SifsPrimFlag&psn = 1 ;
 
@@ -775,8 +698,8 @@
       * If taxable income is between The SIFS lower threshold and the SIFS middle 
         threshold which is the point where the reduction taper starts to kick in, 
         the payment increases by 2.5c for every dollar of income above the SIFS  
-        lower threshold until the SIFS payment rate reaches its maximum 
-      ;
+        lower threshold until the SIFS payment rate reaches its maximum ;
+        
         IF SifsThrLwr <= TaxIncA&psn <= SifsThrMid 
 
             THEN SifsA = MIN( SifsMaxA , ( TaxIncA&psn - SifsThrLwr ) * SifsTpr1 ) ;
@@ -820,8 +743,7 @@
 %MACRO SupplementsAggregates( psn ) ;
 
     SupTotF&psn = CareAllF&psn      
-                + CareSupF&psn      
-                + IncSupBonF&psn    
+                + CareSupF&psn         
                 + SenSupF&psn 
                 + SenSupEsF&psn 
                 + PenEdSupF&psn     

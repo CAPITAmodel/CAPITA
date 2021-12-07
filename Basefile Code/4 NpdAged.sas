@@ -10,15 +10,19 @@ OPTIONS NOFMTERR ;
 * Scaling factor to account for aged people with no stated income ;
 %GLOBAL ScaleFactor ;
 
-* Growth factor used for uprating incomes - growth in Pension Maximum Basic rate (MBR) from 2011-12 to 2015-16 ;
+* Growth factor used for uprating incomes - growth in Pension Maximum Basic rate (MBR) from 2016-17 (census year) to 2017-18 (new SIH year);
+    * This figure is derived from the Common Parameters Spreadsheet 'Pensions_A' tab as follows {[(MBR for SIH year)/(MBR for Census year)]^(1/number of years)-1}*100 ;
 
-%Let GrwthPension = 3.5 ;
+%LET GrwthPension = 2.0 ;
 
 ************************************************************************************
 * 1.    Calculate ScaleFactor to account for NPD aged that do not have income data *                                    
 ************************************************************************************;
+*LIBNAME Library "\\SIH Location" ;                              
+*LIBNAME Census  "\\Census Location" ; 
+
 DATA NpdAgedIncome ;
-    SET Census.csf11bp END = LastRecord ;   
+    SET Census.bcsf16_person END = LastRecord ;   
     FORMAT _ALL_ ;  
     WHERE dwip = 2 and uaicp = 1 and agep >= 33 ; 
 	RETAIN CountIncStated 0 ;
@@ -41,7 +45,7 @@ RUN;
 *      2.        Select aged people living in NPDs from Census                    *
 ***********************************************************************************;
 DATA CensusAged ;                   
-    SET Census.csf11bp;   
+    SET Census.bcsf16_person;   
     FORMAT _ALL_ ;  
     *Resides in a CensusAged & enumerated at home & has income data;                  
     WHERE dwip = 2 and uaicp = 1 and agep >= 33 and incp <= 12 ;                   
@@ -81,11 +85,11 @@ RUN ;
 *3.   Select aged people from the SIH with similar characteristics as the NPD aged*              
 ***********************************************************************************;
 DATA SihAged;                   
-    SET Library.sih15bp; 
+    SET Library.sih17bp; 
 
     FORMAT _ALL_ ; 
 	
-	* Define income threholds to match SIH incomes with Census income threholds ;
+	* Define income threholds to match SIH incomes with Census income thresholds ;
 
 	%LET Cenincthresh1 = 1 ; 			%LET Cenincthresh2 = 200 ;
 	%LET Cenincthresh3 = 300 ;			%LET Cenincthresh4 = 400 ;
@@ -93,7 +97,7 @@ DATA SihAged;
 	%LET Cenincthresh7 = 1000 ;			%LET Cenincthresh8 = 1250 ;
 	%LET Cenincthresh9 = 1500 ; 		%LET Cenincthresh10 = 2000 ;
 
-	* Use income thresholds to uprate the 2011-12 Census data  ;
+	* Use income thresholds to uprate the 2017-18 Census data  ;
 
 	%LET uprCenincthresh1 = &Cenincthresh1 ; 		 						%LET uprCenincthresh2 = &Cenincthresh2*(1+&GrwthPension/100)**2 ;
 	%LET uprCenincthresh3 = &Cenincthresh3*(1+&GrwthPension/100)**2 ; 		%LET uprCenincthresh4 = &Cenincthresh4*(1+&GrwthPension/100)**2 ;
@@ -105,7 +109,7 @@ DATA SihAged;
 	  and who are the only person in their income unit (i.e. lone person income unit type) ;
 
     WHERE ageec >= 65 AND iwssucp8 = 0 AND iobtcp = 0 AND cwkcra = 0 AND iutypep = 4 ;    
-                    
+    
     IF inctscp8< 0 THEN inc = 'inc1' ;                     
     ELSE IF  inctscp8= 0 THEN inc = 'inc2' ; 
     ELSE IF  &uprCenincthresh1 <= inctscp8< &uprCenincthresh2 THEN inc = 'inc3' ;                      
@@ -127,7 +131,8 @@ DATA SihAged;
  
                         
     IF sexp = 1 THEN sex = 'M' ;                    
-    ELSE IF sexp = 2 THEN sex = 'F' ;                   
+    ELSE IF sexp = 2 THEN sex = 'F' ; 
+
 
     MatchId = age!!inc!!sex ;                    
                   
@@ -137,7 +142,7 @@ RUN;
 ***********************************************************************************;
 PROC TABULATE
     DATA = CensusAged 
-    OUT =  CensusMatchIdSum (DROP = _TYPE_ _PAGE_ _TABLE_ ascend) ;
+    OUT =  CensusMatchIdSum (DROP = _TYPE_ _PAGE_ _TABLE_ ) ;
     VAR Censusweight ;
     CLASS MatchId ;
     TABLE MatchId , CensusWeight*(n sum) ;
@@ -145,7 +150,7 @@ RUN ;
 
 PROC TABULATE
     DATA = SihAged 
-    OUT =  SihMatchIdSum (DROP = _TYPE_ _PAGE_ _TABLE_ ascend) ;
+    OUT =  SihMatchIdSum (DROP = _TYPE_ _PAGE_ _TABLE_ ) ;
     VAR sihpswt ;
     CLASS MatchId ;
     TABLE MatchId , sihpswt*(n sum) ;
@@ -158,18 +163,19 @@ DATA MatchIdMerge ;
 RUN ;
 
 DATA CensusSihMatch;
-    SET MatchIdMerge ;
+	SET MatchIdMerge ;
 
-	IF sihpswt_sum = . THEN DELETE ;
-    IF MatchId = "65inc3F" THEN CensusWeight_Sum = 400 ;
-    IF MatchId = "65inc3M" THEN CensusWeight_Sum = 500 ;
-    IF MatchId = "70inc3M" THEN CensusWeight_Sum = 400 ;
+	IF sihpswt_sum = . THEN DELETE ; 
+	/*** The following code manually allocates weights to unmatchedIDs    ***/
+	/*** each new SIH and Census could have different matching results    ***/
+	/*** So this part needs to be checked when new SIH and/or Census used ***/
+	/*
     IF MatchId = "75in11F" THEN CensusWeight_Sum = 200 ;
     IF MatchId = "75inc3F" THEN CensusWeight_Sum = 400 ;
     IF MatchId = "75inc3M" THEN CensusWeight_Sum = 500 ;
     IF MatchId = "80in10M" THEN CensusWeight_Sum = 200 ;
     IF MatchId = "80inc3F" THEN CensusWeight_Sum = 4900 ;
-    IF MatchId = "80inc3M" THEN CensusWeight_Sum = 2000 ;
+    IF MatchId = "80inc3M" THEN CensusWeight_Sum = 2000 ;*/
 
     Scalar = CensusWeight_sum / sihpswt_sum ;
 RUN ;
@@ -211,3 +217,4 @@ DATA NpdAged ;
         RENAME &RenameList1 &RenameList2 ;
 
 RUN ;
+

@@ -58,6 +58,7 @@ PROC FORMAT ;
 		'1Jul2021'd - '30Jun2022'd = '2021'
 		'1Jul2022'd - '30Jun2023'd = '2022'
 		'1Jul2023'd - '30Jun2024'd = '2023'
+		'1Jul2024'd - '30Jun2025'd = '2024'
         ;
 
 RUN ;
@@ -137,7 +138,7 @@ RUN ;
     /* Variables from ReadSIH - current year - private income variables */
 
     IncBusLExpSWp - AWE -
-    IncEmpTotSWp - AWE -
+    IncEmpTotSWp - AWE - 
     IncSuperSWp - CPI -
     IncDivSWp - CPI -
     IncTrustSWp - CPI -
@@ -164,8 +165,8 @@ RUN ;
     IncSSSuperSWp - CPI -
     MaintPaidSWp - AWE -
     DedIntSharesSWp - CPI -
-    GovSuperAcBalp - AWE -
-    PrivSuperAcBalp - AWE -
+    SuperAcBalp - AWE -
+	
 
     /* Variables from ReadSIH - current year - transfer income variables not modelled */
 
@@ -179,39 +180,8 @@ RUN ;
 	DaPPSWp - CPI -  
 
     /* Variables from ReadSIH - previous year */
-
+	/* All previous year income variables no longer exist in SIH 2017-18, except business*/
     IncBusLExpSPAp - AWELagged -
-    IncIntFinSPAp - CPILagged -
-    IncIntBondSPAp - CPILagged -
-    IncIntLoanSPAp - CPILagged - 
-    IncTrustSPAp - CPILagged -
-    IncPUTrustSPAp - CPILagged -
-    IncDivSPAp - CPILagged -
-    IncRoyalSPAp - CPILagged - 
-    IncOthInvSPAp - CPILagged -
-    IncNonHHSPAp - CPILagged -
-    IncOthRegSPAp - CPILagged - 
-    IncOSPenSPAp - CPILagged -
-    IncAccSPAp - AWELagged -
-    IncWCompSPAp - AWELagged -
-    IncRentResSPAp - CPILagged -
-    IncRentNResSPAp - CPILagged -
-    IncWageSPAp - AWELagged -
-    IncMaintSPAp - AWELagged -
-    MaintPaidSPAp - AWELagged -
-    DedIntSharesSPAp - CPILagged -
-
-    /* Variables from ReadSIH - previous year - transfer income variables (all require uprating since none modelled) */
-
-    IncAgePenSPAp - CPILagged -
-    IncNSASPAp - CPILagged -
-    IncDvaSPenSPAp - CPILagged -
-    IncParSPAp - CPILagged -
-    IncSickAllSPAp - CPILagged -
-    IncWidAllSPAp - CPILagged -
-    IncSpBSPAp - CPILagged -
-    IncPartAllSPAp - CPILagged -
-    IncYASPAp - CPILagged -
 
     /* Variables from ReadSIH - wealth */
 
@@ -228,6 +198,7 @@ RUN ;
 	AssSupIncSp - AWE -
 	AssSilPtnrSp - AWE -
 	AssIncorpSp - AWE -
+	HelpDebtp - CPI -
 
     /* Variables from VariableConstruct1 - current year */
 
@@ -277,13 +248,14 @@ RUN ;
     IncServiceAp - AWE -
 
     /* Variables from VariableConstruct1 - previous year */
-
+	/* Previous year income proxied by current year income */
+		
     IncIntPAp - CPILagged -
     IncWCompPAp - AWELagged -
     IncNetRentPAp - CPILagged -
     NetRentLossPAp - CPILagged -
     NetShareLossPAp - CPILagged -
-    NetInvLossPAp - CPILagged -
+    NetInvLossPAp - CPILagged - 
 
 	/* Wealth variables (aggregated) from VariableConstruct1 */
 	
@@ -303,9 +275,11 @@ RUN ;
     DeductionWrkAp - CPI -
 
     /* Variables which are being imputed - previous year */
+	/* Previous year income proxied by current year income*/
+	
 
     FrankCrImpPAp - CPILagged -
-    DeductionPAp - CPILagged -
+    DeductionPAp - CPILagged - 
 
     ;
 

@@ -54,7 +54,7 @@
 
     * Calculate previous year taxable income for parental income purposes ;
 
-    %TaxIncPrevYr( r )
+    %TaxIncPrevYr( r ) 
 
     IF Coupleu = 1 THEN DO ;
 
@@ -108,7 +108,7 @@
 
                       /* Income from super and annuities */                    
                     %IF &psn IN ( r , s , r_ ) %THEN
-                    + IncTaxSuperImpA&psn ;             /* Annual income from taxable superannuation benefits.  */
+                    + IncTaxSuperImpA&psn ;             /* Annual income from taxable superannuation benefits. Created in the Super Module */
 
                       /* Investment income and dividends */
                     + IncIntA&psn                       /* Total current annual income from interest payments */
@@ -158,7 +158,7 @@
 
 		DeemedThr = PenDeemThrS ;
 		AssessDeemedVal = AssDeemedr ;
-		IncFinInvA = IncIntAr + IncDivSAr + IncOthInvSAr ;
+		IncFinInvA = IncIntAr + IncDivSAr + IncOthInvSAr + IncTaxSuperImpAr + IncNonTaxSuperImpAr ;
 
 	END ;
 
@@ -166,7 +166,7 @@
 
 		DeemedThr = PenDeemThrPenC ;
 		AssessDeemedVal = AssDeemedr + AssDeemeds ;
-		IncFinInvA = IncIntAr + IncDivSAr + IncOthInvSAr + IncIntAs + IncDivSAs + IncOthInvSAs ;
+		IncFinInvA = IncIntAr + IncDivSAr + IncOthInvSAr + IncTaxSuperImpAr + IncNonTaxSuperImpAr + IncIntAs + IncDivSAs + IncOthInvSAs + IncTaxSuperImpAs + IncNonTaxSuperImpAs ;
 
 	END ;
 
@@ -222,13 +222,6 @@
         IncPrivLessWBF&psn = IncPrivF&psn ;
 
     END ;
-	%If &RunCameo = Y %then %do;
-		If ActualAge&psn > MaleAgePenAge then 
-			IncWBF&psn = MIN( IncPrivA&psn/26 , WorkBonF );
-		Else   IncWBF&psn = 0 ;
-	    
-		IncPrivLessWBF&psn = MAX( 0 , IncPrivA&psn/26 - IncWBF&psn ) ;
-	%end;
 
 
 %MEND WorkIncome ;
@@ -250,7 +243,7 @@
                        + IncSSTotSF&psn            /* Include salary sacrificed amounts (into super or fringe benefit), and non salary sacrificed amounts. */ 
                        + NonSSTotSF&psn            /* Fringe benefit included are non-grossed up amount, reported or not. */ 
 
-                    /* 2015-16 MYEFO measure to include PLP and DaPP in ordinary income definition */
+                    /* 2015-16 MYEFO measure to include Parental Leave Pay and Dad and Partner Pay in ordinary income definition */
 					%IF ( &Duration = A AND &Year > 2015 ) 
 					OR ( &Duration = Q AND &Year > 2016 ) 
 					OR ( &Duration = Q AND &Year = 2016 AND &Quarter = Dec ) 
@@ -339,6 +332,12 @@
 		* Calculate income for DVA and Pension income test (adjusted for deeming) ;
 		IncDeemDvaTestF = MAX(0, IncDvaTestF + DeemedCalcF) ;
 		IncDeemPenTestF = MAX(0, IncPenTestF + DeemedCalcF) ;
+        
+		* Cameos do not include assets so do not adjust for deeming ;
+		%IF &RunCameo = Y %THEN %DO ; 
+	     	IncDeemDvaTestF = MAX(0, IncDvaTestF ) ; 
+	    	IncDeemPenTestF = MAX(0, IncPenTestF ) ; 
+		%END ; 
 
         * Calculate income for Allowance income test ; 
         IncAllTestFr = IncOrdFr ; 
@@ -358,6 +357,12 @@
 		* Calculate income for DVA and pension income test (adjusted for deeming) ;
 		IncDeemDvaTestF = MAX(0, IncDvaTestF + DeemedCalcF/2) ;
 		IncDeemPenTestF = MAX(0, IncPenTestF + DeemedCalcF/2) ;
+
+		* Cameos do not include assets so do not adjust for deeming ;
+        %IF &RunCameo = Y %THEN %DO ; 
+		    IncDeemDvaTestF = MAX(0, IncDvaTestF ) ;  
+		    IncDeemPenTestF = MAX(0, IncPenTestF ) ; 
+		%END ; 
 
         * Calculate income for Allowance income test. This amount may be halved if the partner is receiving pensions and is calculated in Allowance module ; 
         IncAllTestFr = IncOrdFr ; 
@@ -383,43 +388,46 @@
 
     * Calculate previous year taxable income. This is used for parental income for Youth Allowance purposes ;
 
-    IF DataScopeType&psn = "PrevYrAvail" THEN DO ;    
+/*    IF DataScopeType&psn = "PrevYrAvail" THEN DO ;    */
+/**/
+/*                       /* Taxable previous year private income */*/
+/*        TaxIncPA&psn = IncWageSPA&psn              /* Previous financial year income from employee from all jobs */*/
+/*                     + IncBusLExpSPA&psn           /* Previous financial year income from own unincorporated business. */*/
+/*                     + IncIntPA&psn                /* Previous financial year income from interest payments */*/
+/*                     + IncDivSPA&psn               /* Previous financial year income from dividends. */*/
+/*                     + FrankCrImpPA&psn            /* Previous financial year dividend franking credit. */*/
+/*                     + IncNetRentPA&psn            /* Previous financial year income from rental property */*/
+/*                     + IncRoyalSPA&psn             /* Previous financial year income from royalties. */*/
+/*                     + IncOthInvSPA&psn            /* Previous financial year income from other financial investments. */*/
+/*                       /* Consider either imputing this like current year super */*/
+/*                       /* or use current year taxable super as proxy */*/
+/*                       /* or use total previous year super as proxy */*/
+/*                     + IncTaxSuperImpPA&psn        /* Previous financial year income form supperannuation/annuity/private pension. */*/
+/*                     + IncWCompPA&psn           /* Previous financial year income from Workers compensation. */*/
+/*                     + IncNonHHSPA&psn             /* Previous financial year income from family members not living in the household. */*/
+/*                     + IncOthRegSPA&psn            /* Previous financial year income from other regular sources. */*/
+/*                     + IncOSPenSPA&psn             /* Previous financial year income from overseas pensions and benefits. */*/
+/**/
+/*                       /* Taxable previous year transfer income */*/
+/*                     + IncNsaSPA&psn               /* Previous financial year income from Newstart Allowance. */*/
+/*                     + IncDvaSPenSPA&psn           /* Previous financial year income from Service Pension (DVA). */*/
+/*                     + IncParSPA&psn               /* Previous financial year income from parenting payment. */*/
+/*                     + IncSickAllSPA&psn           /* Previous financial year income from sickness allowance. */*/
+/*                     + IncWidAllSPA&psn            /* Previous financial year income from Widow allowance. */*/
+/*                     + IncSpBSPA&psn               /* Previous financial year income from Special benedit. */*/
+/*                     + IncPartAllSPA&psn           /* Previous financial year income from partner allowance. */*/
+/*                     + IncYaSPA&psn                /* Previous financial year income from youth allowance. */*/
+/*                     + IncAgePenSPA&psn            /* Previous financial year income from Age Pension. */*/
+/**/
+/*                     /* Previous year tax deductions (use current year imputation as proxy) */*/
+/*                     - DeductionPA&psn ;*/
+/**/
+/*        * Only positive amount of previous year parental taxable income is used. Taxable loss is not include ;*/
+/*        TaxIncPA&psn = TaxIncPA&psn * ( TaxIncPA&psn > 0 ) ;*/
+/* */
+/*    END ;  */
 
-                       /* Taxable previous year private income */
-        TaxIncPA&psn = IncWageSPA&psn              /* Previous financial year income from employee from all jobs */
-                     + IncBusLExpSPA&psn           /* Previous financial year income from own unincorporated business. */
-                     + IncIntPA&psn                /* Previous financial year income from interest payments */
-                     + IncDivSPA&psn               /* Previous financial year income from dividends. */
-                     + FrankCrImpPA&psn            /* Previous financial year dividend franking credit. */
-                     + IncNetRentPA&psn            /* Previous financial year income from rental property */
-                     + IncRoyalSPA&psn             /* Previous financial year income from royalties. */
-                     + IncOthInvSPA&psn            /* Previous financial year income from other financial investments. */
-                     + IncTaxSuperImpPA&psn        /* Previous financial year income form supperannuation/annuity/private pension. */
-                     + IncWCompPA&psn           /* Previous financial year income from Workers compensation. */
-                     + IncNonHHSPA&psn             /* Previous financial year income from family members not living in the household. */
-                     + IncOthRegSPA&psn            /* Previous financial year income from other regular sources. */
-                     + IncOSPenSPA&psn             /* Previous financial year income from overseas pensions and benefits. */
-
-                       /* Taxable previous year transfer income */
-                     + IncNsaSPA&psn               /* Previous financial year income from Newstart Allowance. */
-                     + IncDvaSPenSPA&psn           /* Previous financial year income from Service Pension (DVA). */
-                     + IncParSPA&psn               /* Previous financial year income from parenting payment. */
-                     + IncSickAllSPA&psn           /* Previous financial year income from sickness allowance. */
-                     + IncWidAllSPA&psn            /* Previous financial year income from Widow allowance. */
-                     + IncSpBSPA&psn               /* Previous financial year income from Special benedit. */
-                     + IncPartAllSPA&psn           /* Previous financial year income from partner allowance. */
-                     + IncYaSPA&psn                /* Previous financial year income from youth allowance. */
-                     + IncAgePenSPA&psn            /* Previous financial year income from Age Pension. */
-
-                     /* Previous year tax deductions (use current year imputation as proxy) */
-                     - DeductionPA&psn ;
-
-        * Only positive amount of previous year parental taxable income is used. Taxable loss is not include ;
-        TaxIncPA&psn = TaxIncPA&psn * ( TaxIncPA&psn > 0 ) ;
- 
-    END ;  
-
-    ELSE TaxIncPA&psn = IncPrivA&psn ;             /* Using current year private income as a proxy if data is not available */
+    /* ELSE */*/; TaxIncPA&psn = IncPrivA&psn ;             /* Using current year private income as a proxy if data is not available */
 
 %MEND TaxIncPrevYr ;
 
@@ -446,21 +454,22 @@
                               /* Reference income */
             AllPareTestIncA = TaxIncPAr                 /* Previous year taxable income of reference */
                             %IF &Year > 2016 %THEN %DO ;
-                            + RepFbPAr                  /* 2015-16 MYEFO - Previous year reportable fringe benefit of reference (proxied by current year)
-														   */
+                            + RepFbPAr                  /* MO 2015-16 MYEFO - Previous year reportable fringe benefit of reference (proxied by current year)
+														   to be included in the parental income test from 1 January 2017 (since change takes place in the first
+														   quarter of a calendar year, a duration condition is not required here) */
                             %END ;
                             %ELSE %DO ;
                             + AdjFbPAr                  /* Previous year adjusted fringe benefit of reference (proxied by current year) */
                             %END ;
-                            + NetInvLossPAr             /* Previous year Net Investment Loss of reference */  
-                            + RepSupContPAr             /* Previous year Reportable Superannuation Contributions of reference (proxied by current year) */
-                            + IncMaintSPAr              /* Previous year maintenance income received by the reference */
-                            - MaintPaidSPAr             /* Previous year maintenance income paid by the reference*/
+                            + NetInvLossAr             /* Previous year Net Investment Loss of reference, proxied by current year value. No longer Generated on basefile. */  
+                            + RepSupContPAr             /* Previous year Reportable Superannuation Contributions of reference (proxied by current year), proxied by current year value */
+                            + IncMaintSAr              /* Previous year maintenance income received by the reference, proxied by current year */
+                            - MaintPaidSAr             /* Previous year maintenance income paid by the reference, proxied by current year value*/
                             
                             /* 2015-16 Budget p158  From 1 January 2016, parental income will not be increased by any maintenance received by the parent.
                                However parental income will continue to be reduced by any maintenance paid by the parent */
                                 %IF &Year >= 2016 %THEN %DO ;
-                                    - IncMaintSPAr              /* Previous year maintenance income received by the reference */
+                                    - IncMaintSAr              /* Previous year maintenance income received by the reference , proxied by current year value*/
                                 %END ;  
                             ;
 
@@ -477,15 +486,15 @@
                             %ELSE %DO ;
                             + AdjFbPAr                  /* Previous year adjusted fringe benefit of reference (proxied by current year) */
                             %END ;
-                            + NetInvLossPAr             /* Previous year Net Investment Loss of reference */  
-                            + RepSupContPAr             /* Previous year Reportable Superannuation Contributions of reference (proxied by current year) */
-                            + IncMaintSPAr              /* Previous year maintenance income received by the reference */
-                            - MaintPaidSPAr             /* Previous year maintenance income paid by the reference*/
+                            + NetInvLossAr             /* Previous year Net Investment Loss of reference, proxied by current year value */  
+                            + RepSupContPAr             /* Previous year Reportable Superannuation Contributions of reference (proxied by current year), proxied by current year value */
+                            + IncMaintSAr              /* Previous year maintenance income received by the reference, proxied by current year value */
+                            - MaintPaidSAr             /* Previous year maintenance income paid by the reference, proxied by current year value */
 
                             /* 2015-16 Budget From 1 January 2016, parental income will not be increased by any maintenance received by the parent.
                                However parental income will continue to be reduced by any maintenance paid by the parent */
                                 %IF &Year >= 2016 %THEN %DO ;
-                                    - IncMaintSPAr              /* Previous year maintenance income received by the reference */
+                                    - IncMaintSAr              /* Previous year maintenance income received by the reference */
                                 %END ;  
 
                               /* Spouse income */
@@ -497,15 +506,15 @@
                             %ELSE %DO ;
                             + AdjFbPAs                  /* Previous year adjusted fringe benefit of reference (proxied by current year) */
                             %END ;
-                            + NetInvLossPAs             /* Previous year Net Investment Loss of spouse */  
-                            + RepSupContPAs             /* Previous year Reportable Superannuation Contributions of spouse (proxied by current year) */
-                            + IncMaintSPAs              /* Previous year maintenance income received by the spouse */
-                            - MaintPaidSPAs             /* Previous year maintenance income paid by the spouse */
+                            + NetInvLossAs             /* Previous year Net Investment Loss of spouse, proxied by current year value */  
+                            + RepSupContPAs             /* Previous year Reportable Superannuation Contributions of spouse, proxied by current year value */
+                            + IncMaintSAs              /* Previous year maintenance income received by the spouse, proxied by current year value */
+                            - MaintPaidSAs             /* Previous year maintenance income paid by the spouse, proxied by current year value */
 
                             /* 2015-16 Budget From 1 January 2016, parental income will not be increased by any maintenance received by the parent.
                                However parental income will continue to be reduced by any maintenance paid by the parent */
                                 %IF &Year >= 2016 %THEN %DO ;
-                                    - IncMaintSPAs              /* Previous year maintenance income received by the reference */
+                                    - IncMaintSAs              /* Previous year maintenance income received by the reference, proxied by current year value */
                                 %END ;
                             ; 
 
@@ -516,6 +525,33 @@
 %MEND ParenIncTestAll ; 
 
 **********************************************************************************
+*   Macro:   AssessableAssets                                                    *
+*   Purpose: Calculates assets for pension purposes. 							 *
+*	Pensioners below Age Pension Age do not include superannuation balances.     *
+*********************************************************************************;
+%MACRO AssessableAssets( psn ) ;
+
+IF Sex&psn = 'M' THEN DO ;
+	IF ActualAge&psn < MaleAgePenAge THEN DO ;
+	AssetsPenTest&psn = AssTot&psn - SuperAcBal&psn ;	
+	END ;
+
+	ELSE DO ; * Male above pension age ;
+	AssetsPenTest&psn = AssTot&psn ; 
+	END ;
+END ;
+ELSE IF Sex&psn = 'F' THEN DO ;
+	IF ActualAge&psn < FemaleAgePenAge THEN DO ;
+	AssetsPenTest&psn = AssTot&psn - SuperAcBal&psn ;	
+	END ;
+
+	ELSE DO ; * Female above pension age ;
+	AssetsPenTest&psn = AssTot&psn ; 
+	END ;
+END ;
+
+%MEND AssessableAssets ;
+**********************************************************************************
 *   Macro:   AssetsTest                                                          *
 *   Purpose: Calculates assets for pension purposes                              *
 *********************************************************************************;;
@@ -524,9 +560,16 @@
 
 	* Calculate assets for pension assets test.
       If person is in a couple then combine assets ;
-	
-    IF Coupleu = 0 THEN AssetsPenTest = AssTotr ;
-    ELSE IF Coupleu = 1 THEN AssetsPenTest = AssTotr + AssTots ;
+	%AssessableAssets( r )
+
+	IF Coupleu = 0 THEN DO ;	
+		AssetsPenTest = AssetsPenTestr ;
+	END ;
+
+	ELSE IF Coupleu = 1 THEN DO ;
+		%AssessableAssets( s )
+		AssetsPenTest = AssetsPenTestr + AssetsPenTests ;
+	END ;
 
 %MEND AssetsTest ;
 

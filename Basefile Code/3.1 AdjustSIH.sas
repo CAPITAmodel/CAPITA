@@ -22,12 +22,6 @@ DATA SihIncome;
 	IUA13YB=IUFA13YB+IUMA13YB;
 	IUA14YB=IUFA14YB+IUMA14YB;
 
-	/* adjust for one income unit with triplets */
-
 	ABSIUID=left(trim(ABSHID)!!ABSIID);
 
-	IF ABSIUID = "SIH15B89836671" THEN
-		DO;
-			IUA14YB=3;
-		END;
 RUN;

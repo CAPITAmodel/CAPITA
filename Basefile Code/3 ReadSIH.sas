@@ -22,13 +22,24 @@
 %MEND ;
 
 * Read in SIH Person level dataset ;
-%CallSih( sih15bp , SIHperson )
+%CallSih( sih17bp , SIHperson )
+
+/*******************************************************************/
+/*     Manually corrected 3 records from IUPOS = 2 to IUPOS = 1    */
+/*     This is a one-off issue and only for SIH2017-18 data        */
+/*******************************************************************/
+*LIBNAME Library "\\SIH Location" ;                              
+DATA SIHPerson ;
+SET Library.sih17bp ;
+IF ABSHID in ("SIH17B8989620", "SIH17B8986799", "SIH17B8996904") AND AGEEC in (58, 85) THEN IUPOS = 1 ;
+RUN ;
+
 
 * Read in SIH Income unit level dataset ;
-%CallSih( sih15bi , SIHincome )
+%CallSih( sih17bi , SIHincome )
 
 * Read in SIH Household level dataset ;
-%CallSih( sih15bh , SIHhousehold )
+%CallSih( sih17bh , SIHhousehold )
 
 * Make any required adjustments to the SIH datasets ;
 %INCLUDE BaseMods('3.1 AdjustSIH.sas') ;
@@ -49,8 +60,7 @@
     iutypep - IUTypeSp -
     iupos - IUPosSp -
     relathcf - RelationHHSp -
-	yoaabc - YearOfArrivalSp -
-    finscope - FinScopeSp -
+	yoabc - YearOfArrivalSp - 
            
     /* Demographic variables */
 
@@ -62,36 +72,17 @@
     studstcp - StudyTypeSp -
     edinbc - EducInstSp -
     secedql - HighestSYearSp -    
-    hrswkaec - HrsPerWkSp -
+    hrswkaec - HrsPerWkSp - 
 	occ6dig - OccMainJobSp -
+
 
     /* Private Income variables - Previous Year (Annual) */
 
     iobtpp - IncBusLExpSPAp - 
-    iwstpp8 - IncTotEmpIncSPAp -
-    infinpp - IncIntFinSPAp - 
-    indebpp - IncIntBondSPAp - 
-    inplnpp - IncIntLoanSPAp - 
-    pfyitrus - IncTrustSPAp - 
-    inputpp - IncPUTrustSPAp - 
-    idivtpp - IncDivSPAp - 
-    iroyalpp - IncRoyalSPAp - 
-    iinvotpp - IncOthInvSPAp - 
-    pfyifam - IncNonHHSPAp - 
-    ioregupp - IncOthRegSPAp - 
-    ioseaspp - IncOSPenSPAp - 
-    iacsipp - IncAccSPAp - 
-    irwcpp - IncWCompSPAp - 
-    irntrpp - IncRentResSPAp - 
-    irntcpp - IncRentNResSPAp - 
-    iwstpp - IncWageSPAp - 
-    ichldspp - IncMaintSPAp - 
-    pfypcs - MaintPaidSPAp - 
-    linvpp - DedIntSharesSPAp -
-
+	
     /* Private Income variables - Current Year (Weekly) */
 
-    iobtcp - IncBusLExpSWp -
+    iobtcp - IncBusLExpSWp - 
     iwssucp8 - IncEmpTotSWp -               
     infinrcp - IncIntFinSWp - 
     indebrcp - IncIntBondSWp - 
@@ -120,18 +111,6 @@
     ksuppcp - MaintPaidSWp -
     linvcp - DedIntSharesSWp -
     isupercp - IncSuperSWp -
-
-    /* Transfer Income variables - Previous Year (Annual) */
-
-    iagepp - IncAgePenSPAp - 
-    inewstpp - IncNSASPAp - 
-    iservpp - IncDvaSPenSPAp - 
-    iparenpp - IncParSPAp - 
-    isickpp - IncSickAllSPAp - 
-    iwidowpp - IncWidAllSPAp - 
-    ispecpp - IncSpBSPAp - 
-    ipartnpp - IncPartAllSPAp - 
-    iyouthpp - IncYASPAp - 
 
     /* Transfer Income variables - Current Year (Weekly) */       
 
@@ -165,19 +144,21 @@
 	vprtcp - AssPrivTrustSp -
 	vputtcp - AssPubTrustSp -
 	vplncp - AssLoanValSp -
-	supbalnp - AssSupNoIncSp -
+	supbalnp - AssSupNoIncSp - 
 	vubuscp - AssUnincorpSp -
 	vsipcp - AssSilPtnrSp -
 	vibuscp - AssIncorpSp -
-	supbalp - AssSupIncSp -
+	supbalp - AssSupIncSp -  
 
     /* Other variables for the policy modules */
 
     cfyphhc - PrivHlthInsp -
-    vsupgcp - GovSuperAcBalp -
-    vsupncp - PrivSuperAcBalp -
+	vsuptot - SuperAcBalp -		
+    liaheccp - HelpAcDebtp - 
+	liasfscp - SFSSAcDebtp - 
+	dsscsenr - SenSupEsP - /
 
-    ;
+;
 
 
 %LET PersonVarListNoSuff = 

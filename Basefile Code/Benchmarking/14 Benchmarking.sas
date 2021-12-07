@@ -33,6 +33,7 @@ OPTIONS NOFMTERR MINOPERATOR ;
     %DO y = 1 %TO ( %SYSFUNC(COUNTW( &BMYearsList , '-' ) ) ) ; 
         %LET BMYear = %SCAN( &BMYearsList , &y , '-' ) ; 
         %LET BMYearL1 = %EVAL( &BMYear - 1 ) ; 
+		%LET BMYearL2 = %EVAL( &BMYear - 2 ) ; 
 
 		%IF &result = C %THEN %DO ; 
 	        
@@ -40,121 +41,126 @@ OPTIONS NOFMTERR MINOPERATOR ;
 	        %GLOBAL RunBenchmarkFlag ;
 	        %LET RunBenchmarkFlag = Y ;
 
-	        PROC SORT 
-	            DATA = Basefile&BMYear ;
-	            BY HHID FamID IUID ;
-	        RUN ;
+			* Do not benchmark for the 2020-21 year due to the unavailability of benchmarks ;
+			%IF &BMYear <= 2019 OR &BMYEAR >= 2021 %THEN %DO;
 
-	        %INCLUDE "&RunCapita" ;
-
-	        %CreatePreBenchMark 
-
-	        * Add on the appropriate Start Weights ;
-
-	        %IF &BMYear = &SurveyYear %THEN %DO ;
-
-	            DATA PersonBenchmark ;
-	                SET PersonBenchmark ;
-	                In_wgt = IUWeightSu ;
-	            RUN ;
-			%Preweight
-
-	        %END ;
-
-	        %ELSE %DO ;
-
-	            DATA OldWts ;
-	                SET NewWts(KEEP = HHID FamID IUID Psn new_wgt) ;
-	                BY HHID FamID IUID Psn ;
-	            RUN ;
-
-	            DATA PersonBenchmark ;
-	                MERGE PersonBenchmark OldWts ;
-	                BY HHID FamID IUID Psn ;
-	                RENAME new_wgt = In_wgt ;
-	            RUN ;
-
-			%Preweight
-
-	        %END ;
-
-	        * Use GregWt to hit our benchmarks ;
-
-	        %GregWtWriter
-
-			PROC TEMPLATE ; 
-			DEFINE STYLE StdExcel ;
-			Notes "This is the Standard Output Style for GregWt, direct to Excel";
-			    CLASS HEADER / BACKGROUNDCOLOR = Black COLOR = White FONTFAMILY = "Arial" FONTSIZE = 10pt 
-			                   FONTWEIGHT = Bold ;
-			    CLASS TABLE / CELLPADDING = 4pt CELLSPACING = 0pt FRAME = Void RULES = None ;
-			    CLASS DATA / BACKGROUNDCOLOR = White COLOR = Black FONTFAMILY = "Arial" FONTSIZE = 8pt ;
-			    CLASS BODY FROM DATA ;
-			    CLASS ROWHEADER FROM DATA/ FONTWEIGHT = Bold ;
-			END ;
-			RUN ;
-
-			GOPTIONS DEVICE = ACTXIMG ;
-			ODS EXCEL ( ID = INT ) FILE = "&CapitaDirectory.Basefile Code\Benchmarking\GregWt Output\GregWtOutput&BMyear..xlsx"  STYLE = StdExcel
-			    OPTIONS ( SHEET_INTERVAL = "PROC" 
-			                EMBEDDED_TITLES="YES" EMBED_TITLES_ONCE = "YES" 
-			                EMBEDDED_FOOTNOTES="YES" EMBED_FOOTNOTES_ONCE = "YES"
-			                INDEX = "OFF" ) ;
-
-
-			ODS EXCEL ( ID = INT ) OPTIONS ( SHEET_NAME = "GregWt" ) ;
-
-	        %GREGWT( &&GregWtCall&BMyear )
-
-			ODS EXCEL ( ID = INT ) CLOSE ;
-
-	        DATA _BYOUT_ ;
-	            SET _BYOUT_ ;
-	            CALL SYMPUT('result', _result_ ) ;
-	        RUN ; 
-
-	        %IF &result = C %THEN %DO;
-
-	            %PUT ***** BENCHMARKING CONVERGED FOR &BMYear ***** ;
-
-		        * Finally merge the new weights onto a new benchmarked file ;
-
-		        PROC SORT DATA = NewWts ;
-		            BY HHID FamID IUID Psn ;
+		        PROC SORT 
+		            DATA = Basefile&BMYear ;
+		            BY HHID FamID IUID ;
 		        RUN ;
 
-		        DATA PersonBenchmarked&BMyear ;
-		            MERGE PersonBenchmark NewWts(KEEP = HHID FamID IUID Psn new_wgt ) ;
-		            BY HHID FamID IUID Psn ;
-		        RUN ;
+		        %INCLUDE "&RunCapita" ;
 
-		        DATA WeightMerge&BMYear ;
-		            SET PersonBenchmarked&BMyear(KEEP = IUID new_wgt) ;
-		            BY IUID ;
-		            IF First.IUID THEN OUTPUT ;
-		            RENAME new_wgt = weight ;
-		        RUN ;
+		        %CreatePreBenchMark 
 
-		        PROC SORT DATA = WeightMerge&BMYear ;
-		            BY IUID ;  
-		        RUN ;
+		        * Add on the appropriate Start Weights ;
 
-		        DATA bsOUTlb.basefile&BMYear ;
-		            MERGE bsINlb.basefile&BMYear WeightMerge&BMYear ;
-		            BY IUID ;
-		        RUN ;
+		        %IF &BMYear = &SurveyYear %THEN %DO ;
 
-	        %END ;
+		            DATA PersonBenchmark ;
+		                SET PersonBenchmark ;
+		                In_wgt = IUWeightSu ;
+		            RUN ;
+				%Preweight
 
-	        %ELSE %DO ;
+		        %END ;
 
-	            %PUT ERROR: BENCHMARKING FAILED TO CONVERGE FOR &BMYear ;
+		        %ELSE %DO ;
 
-	        %END ;
+		            DATA OldWts ;
+		                SET NewWts(KEEP = HHID FamID IUID Psn new_wgt) ;
+		                BY HHID FamID IUID Psn ;
+		            RUN ;
 
-	    %END ;
+		            DATA PersonBenchmark ;
+		                MERGE PersonBenchmark OldWts ;
+		                BY HHID FamID IUID Psn ;
+		                RENAME new_wgt = In_wgt ;
+		            RUN ;
 
-	%END ; 
+				%Preweight
+
+		        %END ;
+
+		        * Use GregWt to hit our benchmarks ;
+
+		        %GregWtWriter
+
+				PROC TEMPLATE ; 
+				DEFINE STYLE StdExcel ;
+				Notes "This is the Standard Output Style for GregWt, direct to Excel";
+				    CLASS HEADER / BACKGROUNDCOLOR = Black COLOR = White FONTFAMILY = "Arial" FONTSIZE = 10pt 
+				                   FONTWEIGHT = Bold ;
+				    CLASS TABLE / CELLPADDING = 4pt CELLSPACING = 0pt FRAME = Void RULES = None ;
+				    CLASS DATA / BACKGROUNDCOLOR = White COLOR = Black FONTFAMILY = "Arial" FONTSIZE = 8pt ;
+				    CLASS BODY FROM DATA ;
+				    CLASS ROWHEADER FROM DATA/ FONTWEIGHT = Bold ;
+				END ;
+				RUN ;
+
+				GOPTIONS DEVICE = ACTXIMG ;
+				ODS EXCEL ( ID = INT ) FILE = "&CapitaDirectory.Basefile Code\Benchmarking\GregWt Output\GregWtOutput&BMyear..xlsx"  STYLE = StdExcel
+				    OPTIONS ( SHEET_INTERVAL = "PROC" 
+				                EMBEDDED_TITLES="YES" EMBED_TITLES_ONCE = "YES" 
+				                EMBEDDED_FOOTNOTES="YES" EMBED_FOOTNOTES_ONCE = "YES"
+				                INDEX = "OFF" ) ;
+
+
+				ODS EXCEL ( ID = INT ) OPTIONS ( SHEET_NAME = "GregWt" ) ;
+
+		        %GREGWT( &&GregWtCall&BMyear )
+
+				ODS EXCEL ( ID = INT ) CLOSE ;
+
+		        DATA _BYOUT_ ;
+		            SET _BYOUT_ ;
+		            CALL SYMPUT('result', _result_ ) ;
+		        RUN ; 
+
+		        %IF &result = C %THEN %DO;
+
+		            %PUT ***** BENCHMARKING CONVERGED FOR &BMYear ***** ;
+
+			        * Finally merge the new weights onto a new benchmarked file ;
+
+			        PROC SORT DATA = NewWts ;
+			            BY HHID FamID IUID Psn ;
+			        RUN ;
+
+			        DATA PersonBenchmarked&BMyear ;
+			            MERGE PersonBenchmark NewWts(KEEP = HHID FamID IUID Psn new_wgt ) ;
+			            BY HHID FamID IUID Psn ;
+			        RUN ;
+
+			        DATA WeightMerge&BMYear ;
+			            SET PersonBenchmarked&BMyear(KEEP = IUID new_wgt) ;
+			            BY IUID ;
+			            IF First.IUID THEN OUTPUT ;
+			            RENAME new_wgt = weight ;
+			        RUN ;
+
+			        PROC SORT DATA = WeightMerge&BMYear ;
+			            BY IUID ;  
+			        RUN ;
+
+			        DATA bsOUTlb.basefile&BMYear ;
+			            MERGE bsINlb.basefile&BMYear WeightMerge&BMYear ;
+			            BY IUID ;
+			        RUN ;
+
+		        %END ;
+
+		        %ELSE %DO ;
+
+		            %PUT ERROR: BENCHMARKING FAILED TO CONVERGE FOR &BMYear ;
+
+		        %END ;
+
+	    	%END ;
+
+		%END ;
+
+	%END ;	 
 
 
 %MEND RunBenchmarking ;
@@ -186,7 +192,7 @@ OPTIONS NOFMTERR MINOPERATOR ;
  
         * Year of the SIH survey ;
         %GLOBAL SurveyYear ;
-        %LET SurveyYear = 2015 ;
+        %LET SurveyYear = 2017 ; 
 
         * Location of the benchmarks and the GregWt module ;
         %GLOBAL Benchfolder ;
@@ -380,12 +386,12 @@ OPTIONS NOFMTERR MINOPERATOR ;
 
 /* 		Flag all records in a unit if there is a partner recipient, to allow for pre-benchmark re-weighting */
 
-		IF (AllowTyper = "PARTNER" OR AllowTypes = "PARTNER") THEN PartnerCheckFlag = 1;
+		IF (AllowTyper = "PARTNER" OR AllowTypes = "PARTNER") THEN PartnerCheckFlag = 1 ;
 		ELSE PartnerCheckFlag = 0 ;
 
 /* 		Set weight of Wife Pensioners over age pension age to zero - flag all records to allow for pre-benchmark re-weighting */
 
-		IF (WifePenSWs > 0 AND ActualAges >= FemaleAgePenAge) THEN WifePenAgeCheckFlag = 1;
+		IF (WifePenSWs > 0 AND ActualAges >= FemaleAgePenAge) THEN WifePenAgeCheckFlag = 1 ;
 		ELSE WifePenAgeCheckFlag = 0 ;
 
 /*		* Split out to different person type individual datasets ;*/
@@ -500,26 +506,26 @@ OPTIONS NOFMTERR MINOPERATOR ;
         END ;
       
         * Label Payment Type ;
-
+/*** Exclude some small payments as they are phasing out in 2020 and 2021 ***/
         IF PenType          = 'AGE'     THEN BmPaymentType = '01. AgePen' ;
         ELSE IF PenType     = 'DSP'     THEN BmPaymentType = '02. DSP' ;
         ELSE IF PenType     = 'DSPU21'  THEN BmPaymentType = '02. DSP' ;
         ELSE IF PenType     = 'CARER'   THEN BmPaymentType = '03. CarerPay' ;
-        ELSE IF PenType     = 'WIFE'    THEN BmPaymentType = '04. WifePen' ;
-        ELSE IF AllowType   = 'NSA'     THEN BmPaymentType = '05. NSA' ; 
+/*        ELSE IF PenType     = 'WIFE'    THEN BmPaymentType = '04. WifePen' ;*/
+        ELSE IF AllowType   = 'JSP'     THEN BmPaymentType = '05. JSP' ; 
         ELSE IF AllowType   = 'YAOTHER' THEN BmPaymentType = '06. YAOther' ;
         ELSE IF AllowType   = 'YASTUD'  THEN BmPaymentType = '07. YAStud' ;
-        ELSE IF AllowType   = 'SICK'    THEN BmPaymentType = '08. SickAllow' ;
+/*        ELSE IF AllowType   = 'SICK'    THEN BmPaymentType = '08. SickAllow' ;*/
         ELSE IF AllowType   = 'SPB'     THEN BmPaymentType = '09. SpecBft' ;
         ELSE IF AllowType   = 'PPP'     THEN BmPaymentType = '10. PPP' ;
         ELSE IF PenType     = 'PPS'     THEN BmPaymentType = '11. PPS' ;
-        ELSE IF AllowType   = 'WIDOW'   THEN BmPaymentType = '12. WidAllow' ;
+/*        ELSE IF AllowType   = 'WIDOW'   THEN BmPaymentType = '12. WidAllow' ;*/
         ELSE IF DVAType = 'DVASERVDIS' THEN BmPaymentType = '13. DvaServDis' ;
         ELSE IF DVAType = 'SERVICE' THEN BmPaymentType = '14. DvaServ' ;
         ELSE IF DVAType = 'DVADIS'  THEN BmPaymentType = '15. DvaDis' ;
         ELSE IF DVAType = 'WARWID'  THEN BmPaymentType = '16. DvaWWid' ; 
         ELSE IF AllowType = 'AUSTUDY' THEN BmPaymentType = '17. Austudy' ;
-		ELSE IF AllowType = 'PARTNER' THEN BmPaymentType = '18. Partner' ;
+/*		ELSE IF AllowType = 'PARTNER' THEN BmPaymentType = '18. Partner' ;*/
 
         * Label Carer Allowance ;
 
@@ -570,43 +576,42 @@ OPTIONS NOFMTERR MINOPERATOR ;
 	The below retain statement will keep the last value of our indicators. 
 	Make sure all indicators in RETAIN statement ;
 
-		RETAIN ScalePTA ScaleSPL ScaleYAO ScaleNSA ScalePPP ScalePPS ScaleSKA ScaleDWW ScaleDSD ScaleAUS ScaleWID ScaleWFP ; 
+		RETAIN /* ScalePTA */ ScaleSPL ScaleYAO ScaleJSP ScalePPP ScalePPS /*ScaleSKA*/ ScaleDWW ScaleDSD ScaleAUS /* ScaleWID */ /*ScaleWFP*/ ; 
 
 		IF FIRST.HHID THEN DO ; 
 
-			ScaleWFP = 'N' ;
-			ScalePTA = 'N' ;
+/*			ScaleWFP = 'N' ;*/
+/*			ScalePTA = 'N' ;*/
 			ScaleSPL = 'N' ;
 			ScaleYAO = 'N' ; 
-			ScaleNSA = 'N' ;
+			ScaleJSP = 'N' ;
 			ScalePPP = 'N' ;   
 			ScalePPS = 'N' ;
-			ScaleSKA = 'N' ;
+/*			ScaleSKA = 'N' ;*/
 			ScaleDWW = 'N' ;
 			ScaleDSD = 'N' ;
-			ScaleWID = 'N' ;
+/*			ScaleWID = 'N' ;*/
 			ScaleAUS = 'N' ;
 
 		END ;  
 
 	* Below we check for conditions required for scaling. Please see above for definitions of
 	BmPaymentType and WifePenAgeCheckFlag. ;
-		IF BmPaymentType = '04. WifePen' AND WifePenAgeCheckFlag = 1 THEN ScaleWFP = 'Y' ; 
-		IF BmPaymentType = '05. NSA'  THEN ScaleNSA = 'Y' ; 
+/*		IF BmPaymentType = '04. WifePen' AND WifePenAgeCheckFlag = 1 THEN ScaleWFP = 'Y' ; */
+		IF BmPaymentType = '05. JSP'  THEN ScaleJSP = 'Y' ; 
 		IF BmPaymentType = '06. YAOther' THEN ScaleYAO = 'Y' ; 
-		IF BmPaymentType = '08. SickAllow' THEN ScaleSKA = 'Y' ; 
+/*		IF BmPaymentType = '08. SickAllow' THEN ScaleSKA = 'Y' ; */
 		IF BmPaymentType = '09. SpecBft' THEN ScaleSPL = 'Y' ; 
 		IF BmPaymentType = '10. PPP' THEN ScalePPP = 'Y' ;  
 		IF BmPaymentType = '11. PPS' THEN ScalePPS = 'Y' ;
-		IF BmPaymentType = '12. WidAllow' THEN ScaleWID = 'Y' ;
+/*		IF BmPaymentType = '12. WidAllow' THEN ScaleWID = 'Y' ;*/
 		IF BmPaymentType = '13. DvaServDis' THEN ScaleDSD = 'Y' ;
-		IF BmPaymentType = '14. DvaServ' THEN ScaleDS = 'Y' ;
 		IF BmPaymentType = '16. DvaWWid' THEN ScaleDWW = 'Y' ;
 		IF BmPaymentType = '17. Austudy' THEN ScaleAUS = 'Y' ;
-		IF BmPaymentType = '18. Partner' THEN ScalePTA = 'Y' ; 
+/*		IF BmPaymentType = '18. Partner' THEN ScalePTA = 'Y' ; */
 
 		IF LAST.HHID THEN OUTPUT ; 
-	* As we have retained ScalePartner and ScaleWFP, the last record will identify if anyone in the HHID
+	* If we have retained ScalePartner and ScaleWFP, the last record will identify if anyone in the HHID
 		has a value of Y for each of these indicators. ;
 
 	RUN ; 
@@ -628,34 +633,94 @@ OPTIONS NOFMTERR MINOPERATOR ;
 /* Store the target values as macro variables for the age by sex  */
 	DATA _NULL_ ;
 		SET &benchpreweight ;
-		RETAIN TotalPop TotalPopL1 0 ;
+		RETAIN TotalPop TotalPopL1 TotalPopL2 0 ;
 			TotalPop = TotalPop + y&BMYear ;
 			TotalPopL1 = TotalPopL1 + y&BMYearL1 ;
-		%GLOBAL y&BMYear._Total_Pop y&BMYearL1._Total_Pop ;
+			TotalPopL2 = TotalPopL2 + y&BMYearL2 ;
+		%GLOBAL y&BMYear._Total_Pop y&BMYearL1._Total_Pop y&BMYearL2._Total_Pop;
 		CALL SYMPUT("y&BMYear._Total_Pop" , TotalPop ) ;
 		CALL SYMPUT("y&BMYearL1._Total_Pop" , TotalPopL1 ) ;
+		CALL SYMPUT("y&BMYearL2._Total_Pop" , TotalPopL2 ) ;
 	RUN ;
+
+
+/*** After the first round of Reweighting, WifePen, PPP, DvaServDis and Partner are 4 payments with big gaps from benchmark data, need to be manually adjusted ***/
 
 /* Preweight the benchmarks for Partner Allowance to assist with convergence */
 /* Store the target values for Partner Allowance benchmarks as macro variables */
-	DATA _NULL_ ;
-		SET BMPaymentType ;
-			WHERE BMPaymentType = "18. Partner" ; 
-		%GLOBAL y&BMYear._Partner_Pop y&BMYearL1._Partner_Pop ;
-		CALL SYMPUT("y&BMYear._Partner_Pop" , y&BMYear ) ;
-		CALL SYMPUT("y&BMYearL1._Partner_Pop" , y&BMYearL1 ) ;
-	RUN ;
+/*	DATA _NULL_ ;*/
+/*		SET BMPaymentType ;*/
+/*			WHERE BMPaymentType = "18. Partner" ; */
+/*		%GLOBAL y&BMYear._Partner_Pop y&BMYearL1._Partner_Pop ;*/
+/*		CALL SYMPUT("y&BMYear._Partner_Pop" , y&BMYear ) ; */
+/*		CALL SYMPUT("y&BMYearL1._Partner_Pop" , y&BMYearL1 ) ;*/
+/*	RUN ;*/
 
 
 /* Preweight the benchmarks for Widow Allowance to assist with convergence */
 /* Store the target values for Widow Allowance benchmarks as macro variables */
+/*	DATA _NULL_ ;*/
+/*		SET BMPaymentType ;*/
+/*			WHERE BMPaymentType = "12. WidAllow" ; */
+/*		%GLOBAL y&BMYear._Wid_Pop y&BMYearL1._Wid_Pop ;*/
+/*		CALL SYMPUT("y&BMYear._Wid_Pop" , y&BMYear ) ;*/
+/*		CALL SYMPUT("y&BMYearL1._Wid_Pop" , y&BMYearL1 ) ;*/
+/*	RUN ;*/
+
+/* Preweight the benchmarks for Wife Pension to assist with convergence */
+/* Store the target values for Wife Pension benchmarks as macro variables */
+/*	DATA _NULL_ ;*/
+/*		SET BMPaymentType ;*/
+/*			WHERE BMPaymentType = "04. WifePen" ; */
+/*		%GLOBAL y&BMYear._Wif_Pop y&BMYearL1._Wif_Pop ;*/
+/*		CALL SYMPUT("y&BMYear._Wif_Pop" , y&BMYear ) ;*/
+/*		CALL SYMPUT("y&BMYearL1._Wif_Pop" , y&BMYearL1 ) ;*/
+/*	RUN ;*/
+
+/* Preweight the benchmarks for PPP Allowance to assist with convergence */
+/* Store the target values for PPP Allowance benchmarks as macro variables */
 	DATA _NULL_ ;
 		SET BMPaymentType ;
-			WHERE BMPaymentType = "12. WidAllow" ; 
-		%GLOBAL y&BMYear._Partner_Pop y&BMYearL1._Partner_Pop ;
-		CALL SYMPUT("y&BMYear._Wid_Pop" , y&BMYear ) ;
-		CALL SYMPUT("y&BMYearL1._Wid_Pop" , y&BMYearL1 ) ;
+			WHERE BMPaymentType = "10. PPP" ; 
+		%GLOBAL y&BMYear._PPP_Pop y&BMYearL1._PPP_Pop y&BMYearL2._PPP_Pop ;
+		CALL SYMPUT("y&BMYear._PPP_Pop" , y&BMYear ) ;
+		CALL SYMPUT("y&BMYearL1._PPP_Pop" , y&BMYearL1 ) ;
+		CALL SYMPUT("y&BMYearL2._PPP_Pop" , y&BMYearL2 ) ;
 	RUN ;
+
+
+
+	/* Preweight the benchmarks for DVAServDis Allowance to assist with convergence */
+/* Store the target values for Widow DVAServDis benchmarks as macro variables */
+	DATA _NULL_ ;
+		SET BMPaymentType ;
+			WHERE BMPaymentType = "13. DvaServDis" ; 
+		%GLOBAL y&BMYear._DvaServDis_Pop y&BMYearL1._DvaServDis_Pop y&BMYearL2._DvaServDis_Pop ;
+		CALL SYMPUT("y&BMYear._DvaServDis_Pop" , y&BMYear ) ;
+		CALL SYMPUT("y&BMYearL1._DvaServDis_Pop" , y&BMYearL1 ) ;
+		CALL SYMPUT("y&BMYearL2._DvaServDis_Pop" , y&BMYearL2 ) ; 
+	RUN ;
+
+	/* Preweight the benchmarks for Specific benefit to assist with convergence */
+/* Store the target values for Specifit benefit benchmarks as macro variables */
+	DATA _NULL_ ;
+		SET BMPaymentType ;
+			WHERE BMPaymentType = "09. SpecBft" ; 
+		%GLOBAL y&BMYear._SpecBft_Pop y&BMYearL1._SpecBft_Pop ;
+		CALL SYMPUT("y&BMYear._SpecBft_Pop" , y&BMYear ) ;
+		CALL SYMPUT("y&BMYearL1._SpecBft_Pop" , y&BMYearL1 ) ;
+	RUN ;
+
+	/* Preweight the benchmarks for Austudy to assist with convergence */
+/* Store the target values for Austudy benchmarks as macro variables */
+	DATA _NULL_ ;
+		SET BMPaymentType ;
+			WHERE BMPaymentType = "17. Austudy" ; 
+		%GLOBAL y&BMYear._Austudy_Pop y&BMYearL1._Austudy_Pop ;
+		CALL SYMPUT("y&BMYear._Austudy_Pop" , y&BMYear ) ;
+		CALL SYMPUT("y&BMYearL1._Austudy_Pop" , y&BMYearL1 ) ;
+	RUN ;
+
 
 
 /* Pre-weight by adjusting the weights sequentially */
@@ -663,63 +728,151 @@ OPTIONS NOFMTERR MINOPERATOR ;
 DATA PersonBenchmark ;
 	SET PersonBenchmark ;
 	
+/* Adjust weights mannually for 2021 year using 2019 as a base as 2020 skipped for benchmarking */
+
+	%IF &BMYear = 2021 %THEN %DO ; 
+
+		In_wgt = In_wgt * (&&y&BMYEAR._Total_Pop / &&y&BMYEARL2._Total_Pop) ;
+
+		IF ScalePPP = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._PPP_Pop / &&y&BMYEARL2._PPP_Pop) ;
+		END ;
+
+		IF ScaleDSD = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._DvaServDis_Pop / &&y&BMYEARL2._DvaServDis_Pop) ;
+		END ;
+
+	%END ; 
+	%ELSE %DO ;
+	
 		In_wgt = In_wgt * (&&y&BMYEAR._Total_Pop / &&y&BMYEARL1._Total_Pop) ;
+
+	%END ; 
 
 /* Also adjust weights manually to account for grandfathered payments */
 	/* Partner Allowance */
 
-	%IF &BMYear = 2015 %THEN %DO ;
+	%IF &BMYear = 2017 %THEN %DO ;
 
-
-		IF ScalePTA = 'Y' OR ScaleNSA = 'Y' OR ScalePPP = 'Y'  OR ScaleDSD = 'Y' THEN DO ;
+		IF ScaleJSP = 'Y'  OR ScaleDWW = 'Y' OR ScaleAUS = 'Y' THEN DO ;
 
 			OldWeight = In_wgt ;
 			In_wgt = In_wgt * 1.5 ;
 
 		END ;
 
-		ELSE IF ScaleSPL = 'Y' OR ScaleYAO = 'Y' OR ScalePPS = 'Y'  THEN DO ;
+/*		IF ScalePTA = 'Y' THEN DO ;*/
+/**/
+/*			OldWeight = In_wgt ;*/
+/*			In_wgt = In_wgt * 3 ;*/
+/**/
+/*		END ;*/
+
+		ELSE IF /*ScaleSPL = 'Y' OR */ ScaleYAO = 'Y' OR ScalePPS = 'Y' OR ScaleDSD = 'Y' /* OR ScaleWFP = 'Y' */ OR ScalePPP = 'Y' THEN DO ;
 
 			OldWeight = In_wgt ;
 			In_wgt = In_wgt * 2 ;
 
 		END ; 
 
-		ELSE IF ScaleSKA = 'Y' OR ScaleAUS = 'Y' OR ScaleDS = 'Y' THEN DO ;
+/*		ELSE IF ScaleSKA = 'Y' THEN DO ;*/
+/**/
+/*					OldWeight = In_wgt ;*/
+/*			In_wgt = In_wgt * 0.75 ;*/
 
-			OldWeight = In_wgt ;
-			In_wgt = In_wgt * 0.75 ;
-
-		END ; 
-
+/*		END ; */
 
 	%END ;
 
 /* Also adjust weights manually to account for grandfathered payments */
 	/* Partner Allowance */
 
-	%IF &BMYear > 2015 %THEN %DO ;
-		IF ScalePTA = 'Y' THEN DO ;
-			In_wgt = In_wgt * (&&y&BMYEAR._Partner_Pop / &&y&BMYEARL1._Partner_Pop) ;
+	%IF 2020 > &BMYear > 2017 %THEN %DO ;
+
+/*		IF ScalePTA = 'Y' THEN DO ;*/
+/*			In_wgt = In_wgt * (&&y&BMYEAR._Partner_Pop / &&y&BMYEARL1._Partner_Pop) ;*/
+/*		END ;*/
+
+/*		IF ScaleWFP = 'Y' THEN DO ;*/
+/*			In_wgt = In_wgt * (&&y&BMYEAR._WIF_Pop / &&y&BMYEARL1._WIF_Pop) ;*/
+/*		END ;*/
+
+		IF ScalePPP = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._PPP_Pop / &&y&BMYEARL1._PPP_Pop) ;
 		END ;
+
+		IF ScaleDSD = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._DvaServDis_Pop / &&y&BMYEARL1._DvaServDis_Pop) ;
+		END ;
+
+		IF ScaleSPL = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._SpecBft_Pop / &&y&BMYEARL1._SpecBft_Pop) ;
+		END ;
+
+		IF ScaleAUS = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._Austudy_Pop / &&y&BMYEARL1._Austudy_Pop) ;
+		END ;
+
+/*		IF ScaleWID = 'Y' THEN DO ;*/
+/*			In_wgt = In_wgt * (&&y&BMYEAR._Wid_Pop / &&y&BMYEARL1._Wid_Pop) ;*/
+/*		END ;*/
+
+
 	%END ;
 
-/* Also adjust weights manually to account for closing payments */
-	/* Widow Allowance */
+	%IF &BMYear >= 2022 %THEN %DO; 
 
-	%IF &BMYear > 2020 %THEN %DO ;
-		IF ScaleWID = 'Y' THEN DO ;
-			In_wgt = In_wgt * (&&y&BMYEAR._Wid_Pop / &&y&BMYEARL1._Wid_Pop) ;
+		IF ScalePPP = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._PPP_Pop / &&y&BMYEARL1._PPP_Pop) ;
 		END ;
-	%END ;
+
+		IF ScaleDSD = 'Y' THEN DO ;
+			In_wgt = In_wgt * (&&y&BMYEAR._DvaServDis_Pop / &&y&BMYEARL1._DvaServDis_Pop) ;
+		END ;
+
+/*		IF ScaleWFP = 'Y' THEN DO; */
+/*			In_wgt = 0 ; */
+/*		END; */
+/**/
+/*		IF ScaleSKA = 'Y' THEN DO;*/
+/*			In_wgt = 0;*/
+/*		END;*/
+	%END; 	
+
+/*	%IF &BMYear = 2020 %THEN %DO ;*/
+/**/
+/*		IF ScalePTA = 'Y' THEN DO ;*/
+/*			In_wgt = In_wgt * (&&y&BMYEAR._Partner_Pop / &&y&BMYEARL1._Partner_Pop) * 0.3;*/
+/*		END ;*/
+/**/
+/*		IF ScaleWID = 'Y' THEN DO ;*/
+/*			In_wgt = In_wgt * (&&y&BMYEAR._Wid_Pop / &&y&BMYEARL1._Wid_Pop) * 0.5;*/
+/*		END ;*/
+/**/
+/*	%END ;*/
+
+/*	%IF &BMYear > 2020 %THEN %DO ;*/
+/**/
+/*/* Also adjust weights manually to account for closing payments */*/
+/*	/* Widow Allowance */*/
+/*	/* Partner allowance */*/
+/**/
+/*		IF ScaleWID = 'Y' THEN DO ;*/
+/*			In_wgt = 0 ;*/
+/*		END ;*/
+/**/
+/*		IF ScalePTA = 'Y' THEN DO ;*/
+/*			In_wgt = 0 ;*/
+/*		END ;*/
+/**/
+/*	%END ;*/
+
 
 	/*Set weights of observations to zero*/
-	/*Wife Pensioners over age pension age - 2017-18 Budget Working Age Payment Reforms*/ 
-	%IF &BMYear >= 2020 %THEN %DO; 
-		IF ScaleWFP = 'Y' THEN DO; 
-			In_wgt = 0 ; 
-		END; 
-	%END; 	
+	/*Wife Pensioners over age pension age - 2017-18 Budget Working Age Payment Reforms*/
+	/*Sickness Allowance*/ 
+
+
 
 	DROP WifePenAgeCheckFlag; 
 
@@ -763,8 +916,8 @@ RUN ;
 	%ELSE %DO ;
 
 	    %LET GREGWTEnd =            ,MAXITER = 10
-                ,UPPER   = 155%
-                ,LOWER   = 65%
+                ,UPPER   = 150%
+                ,LOWER   = 70%
                 ,EPSILON = 0.02
                 ,OPTIONS = HMEAN
 	                
